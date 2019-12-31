@@ -26,6 +26,6 @@ git clone https://github.com/xenos1984/xPPN.git
 
 ### xAct
 
-* author José M. Martín-García, [xAct: Efficient tensor computer algebra for the Wolfram Language][xAct].
+* José M. Martín-García, [xAct: Efficient tensor computer algebra for the Wolfram Language][xAct].
 
 [xAct]: http://www.xact.es
