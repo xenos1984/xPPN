@@ -7,10 +7,6 @@ Tau::usage = "";
 CD::usage = "";
 FD::usage = "";
 
-GaugeVector::usage = "";
-GaugeInvTet::usage = "";
-GaugeInvTau::usage = "";
-
 $DefInfoQ = False;
 $UndefInfoQ = False;
 
@@ -21,10 +17,6 @@ DefTensor[Tau[-T4\[Mu], -T4\[Nu]], {MfSpacetime}, PrintAs -> "\[Tau]"];
 DefCovD[FD[-T4\[Mu]], LorentzMfSpacetime, SymbolOfCovD -> {"|", "\!\(\[EmptyDownTriangle]\&\[FilledCircle]\)"}, FromMetric -> Met, Torsion -> True, Curvature -> False];
 
 GiveSymbol[Christoffel, CD, FD];
-
-DefTensor[GaugeVector[T4\[Mu]], {MfSpacetime}, PrintAs -> "\[ScriptCapitalX]"];
-DefTensor[GaugeInvTet[L4\[CapitalAlpha], -T4\[Mu]], {MfSpacetime}, PrintAs -> "\[ScriptCapitalE]"];
-DefTensor[GaugeInvTau[-T4\[Mu], -T4\[Nu]], {MfSpacetime}, PrintAs -> "\[ScriptCapitalT]"];
 
 Begin["xAct`xPPN`Private`"]
 
@@ -48,15 +40,6 @@ PPNRules[GiveSymbol[Christoffel, CD, FD]] ^= PPNContortionRules[CD, FD];
 PPNRules[EnergyMomentum] ^= PPNEnMomRules[EnergyMomentum, Met, Density, Pressure, InternalEnergy, Velocity, BkgMetricS3];
 
 MetricToStandard[expr_] := expr //. Join[StandardMetricRules[Met, BkgMetricS3], PPNMetricRules[Met, BkgMetricS3]];
-
-PPNRules[GaugeVector] ^= PPNGaugeVecRules[GaugeVector];
-PPNRules[GaugeInvTau] ^= PPNTauRules[GaugeInvTau, BkgMetricS3];
-PPNRules[GaugeInvTet] ^= PPNTetradTauRules[GaugeInvTet, GaugeInvTau, BkgTetradS3, BkgMetricS3];
-
-GIRules[Tau] ^= GITauRules[Tau, GaugeInvTet, GaugeVector, BkgInvTetradM4, BkgMetricM4];
-
-DDRules[GaugeVector] ^= DDGaugeVectorRules[GaugeVector];
-DDRules[GaugeInvTau] ^= DDGaugeInvTauRules[GaugeInvTau, BkgMetricS3];
 
 End[]
 
