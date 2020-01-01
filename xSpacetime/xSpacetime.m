@@ -77,14 +77,14 @@ SpaceTimeSplits::usage = "";
 
 VelocityOrder::usage = "";
 ApplyPPNRules::usage = "";
-PPN::usage = "";
+PPN::usage = "PPN[head][indices] yields the 3+1 split of a tensor with given head and indices. PPN[head, order][indices] yields a single term in the perturbative expansion of the aforementioned tensor.";
 
 UsePPNRules::usage = "UsePPNRules is an option to VelocityOrder which specifies whether PPN rules for tensors at particular velocity orders should be applied or not. Possible values are True and False.";
 
-SortPDs::usage = "";
-SortPDsToBox::usage = "";
-SortPDsToDiv::usage = "";
-SortPDsToTime::usage = "";
+SortPDs::usage = "SortPDs[expr] sorts derivatives appearing in expr such that they appear in canonical order: spatial derivatives are applied before time derivatives and are sorted lexicographically.";
+SortPDsToBox::usage = "SortPDsToBox[expr] sorts derivatives appearing in expr such that pairs of spatial derivatives which combine to d'Alembert or Laplace operators are grouped and applied first.";
+SortPDsToDiv::usage = "SortPDsToDiv[expr] sorts derivatives appearing in expr such that spatial derivatives which are contracted with indices of the tensor on which they act are applied first.";
+SortPDsToTime::usage = "SortPDsToTime[expr] sorts derivatives appearing in expr such that time derivatives are applied before spatial derivatives.";
 
 PotentialToSource::usage = "PotentialToSource[expr] replaces derivatives of PPN potentials by source terms.";
 
