@@ -12,18 +12,18 @@ AutomaticRules[TREnergyMomentum, MakeRule[{TREnergyMomentum[-T4\[Mu], -T4\[Nu]],
 
 Begin["xAct`xPPN`Private`"]
 
-PPNRules[Met] ^= PPNMetricRules[Met, BkgMetricS3];
-PPNRules[GiveSymbol[Inv, Met]] ^= PPNInvMetricRules[Met, BkgMetricS3];
-PPNRules[GiveSymbol[Christoffel, CD]] ^= PPNLeviCivitaRules[CD, Met];
+CreateMetricRules[Met, BkgMetricS3];
+CreateInvMetricRules[Met, BkgMetricS3];
+(*PPNRules[GiveSymbol[Christoffel, CD]] ^= PPNLeviCivitaRules[CD, Met];
 PPNRules[GiveSymbol[Riemann, CD]] ^= PPNRiemannRules[CD];
 PPNRules[GiveSymbol[RiemannDown, CD]] ^= PPNRiemannDownRules[CD, Met];
 PPNRules[GiveSymbol[Ricci, CD]] ^= PPNRicciRules[CD, Met];
 PPNRules[GiveSymbol[RicciScalar, CD]] ^= PPNRicciScalarRules[CD, Met];
 PPNRules[GiveSymbol[Einstein, CD]] ^= PPNEinsteinRules[CD, Met];
+*)
+CreateEnMomRules[EnergyMomentum, Met, Density, Pressure, InternalEnergy, Velocity, BkgMetricS3];
 
-PPNRules[EnergyMomentum] ^= PPNEnMomRules[EnergyMomentum, Met, Density, Pressure, InternalEnergy, Velocity, BkgMetricS3];
-
-MetricToStandard[expr_] := expr //. Join[StandardMetricRules[Met, BkgMetricS3], PPNMetricRules[Met, BkgMetricS3]];
+MetricToStandard[expr_] := expr //. Join[StandardMetricRules[Met, BkgMetricS3], PPNRules[Met]];
 
 End[]
 

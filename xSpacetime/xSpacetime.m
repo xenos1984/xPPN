@@ -81,6 +81,10 @@ PPN::usage = "PPN[head][indices] yields the 3+1 split of a tensor with given hea
 
 UsePPNRules::usage = "UsePPNRules is an option to VelocityOrder which specifies whether PPN rules for tensors at particular velocity orders should be applied or not. Possible values are True and False.";
 
+OrderSet::usage = "";
+OrderUnset::usage = "";
+OrderClear::usage = "";
+
 SortPDs::usage = "SortPDs[expr] sorts derivatives appearing in expr such that they appear in canonical order: spatial derivatives are applied before time derivatives and are sorted lexicographically.";
 SortPDsToBox::usage = "SortPDsToBox[expr] sorts derivatives appearing in expr such that pairs of spatial derivatives which combine to d'Alembert or Laplace operators are grouped and applied first.";
 SortPDsToDiv::usage = "SortPDsToDiv[expr] sorts derivatives appearing in expr such that spatial derivatives which are contracted with indices of the tensor on which they act are applied first.";
@@ -112,6 +116,8 @@ Begin["xAct`xPPN`Private`"]
 
 $MaxPPNOrder = 4;
 
+SpacetimeVBundleQ[vb_] := And[VBundleQ[vb], BaseOfVBundle[vb] === MfSpacetime, BaseOfVBundle /@ (List @@ First[SplittingsOfVBundle[vb]]) === {MfTime, MfSpace}];
+
 (* A PPNTensor object represents a tensor, if the following is satisfied: *)
 PPNTensor /: xTensorQ[PPNTensor[head_, slots_List, o_ : 0]] := And[
 	xTensorQ[head],
@@ -136,12 +142,11 @@ PPNTensor /: PrintAs[PPNTensor[head_, slots_List, o_] ? xTensorQ] := OverscriptB
 
 PPNTensorSymmetry[_, _] := StrongGenSet[{}, GenSet[]];
 
-SpacetimeVBundleQ[vb_] := And[VBundleQ[vb], BaseOfVBundle[vb] === MfSpacetime, BaseOfVBundle /@ (List @@ First[SplittingsOfVBundle[vb]]) === {MfTime, MfSpace}];
-
 ToPPNTensor[head_[inds___]] := PPNTensor[head, MapThread[ReplaceAll[#1, _ ? SpacetimeVBundleQ -> #2]&, {SlotsOfTensor[head], VBundleOfIndex /@ {inds}}, 1]][inds];
 ToPPNTensor[head_[inds___], n_] := PPNTensor[head, MapThread[ReplaceAll[#1, _ ? SpacetimeVBundleQ -> #2]&, {SlotsOfTensor[head], VBundleOfIndex /@ {inds}}, 1], n][inds];
 
-PPNTensorSymmetry[GaugeInv[head_], {slots___}] := PPNTensorSymmetry[head, {slots}];
+PPN[head_ ? xTensorQ][inds___] := ToPPNTensor[head[inds]];
+PPN[head_ ? xTensorQ, n_Integer ? NonNegative][inds___] := ToPPNTensor[head[inds], n];
 
 DefTensorBeginning[head_[inds___], deps_, sym_, opts___] := Null;
 
@@ -196,6 +201,20 @@ DefTensorEnd[head_[inds___], deps_, sym_, opts___] := Module[{ntot, nst, pst, pi
 
 xTension["xPPN`", DefTensor, "Beginning"] = DefTensorBeginning;
 xTension["xPPN`", DefTensor, "End"] = DefTensorEnd;
+
+PPNRules[_, _List, _Integer] := {};
+
+PPNRules[head_, o_Integer] := Flatten[Outer[PPNRules[head, {##}, o]&, Sequence @@ (List /@ SlotsOfTensor[head] /. {{Tangent[MfSpacetime]} -> {Labels, Tangent[MfSpace]}, {-Tangent[MfSpacetime]} -> {-Labels, -Tangent[MfSpace]}, {LorentzMfSpacetime} -> {Labels, LorentzMfSpace}, {-LorentzMfSpacetime} -> {-Labels, -LorentzMfSpace}})]];
+
+PPNRules[head_, slots_List] := Flatten[PPNRules[head, slots, #]& /@ Range[0, $MaxPPNOrder]];
+
+PPNRules[head_] := Flatten[PPNRules[head, #]& /@ Range[0, $MaxPPNOrder]];
+
+OrderSet[lhs : PPNTensor[head_, slots_List, o_] ? xTensorQ[inds___], rhs_] := TagSet[head, PPNRules[head, slots, o], MakeRule[{lhs, rhs}, MetricOn -> All, ContractMetrics -> True]];
+
+OrderUnset[PPNTensor[head_, slots_List, o_] ? xTensorQ[inds___]] := TagUnset[head, PPNRules[head, slots, o]];
+
+(*OrderClear[head] :=*)
 
 PPNTauRules[tau_, bkm_] := Flatten[MakeRule[#, MetricOn -> All, ContractMetrics -> True]& /@ {
 	(* Zeroth order is background metric. *)
@@ -298,62 +317,64 @@ PPNContortionRules[cd_, fd_] := Module[{expr},
 	Return[Flatten[MakeRule[#, MetricOn -> All, ContractMetrics -> True]& /@ expr]];
 ];
 
-PPNMetricRules[met_, bkg_] := Flatten[MakeRule[#, MetricOn -> All, ContractMetrics -> True]& /@ {
+CreateMetricRules[met_, bkg_] := (
 	(* Zeroth order is background metric. *)
-	{PPNTensor[met, {-Labels, -Labels}, 0][-LI[0], -LI[0]], -1},
-	{PPNTensor[met, {-Labels, -Tangent[MfSpace]}, 0][-LI[0], -T3a], 0},
-	{PPNTensor[met, {-Tangent[MfSpace], -Tangent[MfSpace]}, 0][-T3a, -T3b], bkg[-T3a, -T3b]},
-
+	OrderSet[PPN[met, 0][-LI[0], -LI[0]], -1];
+	OrderSet[PPN[met, 0][-LI[0], -T3a]  , 0];
+	OrderSet[PPN[met, 0][-T3a, -T3b]    , bkg[-T3a, -T3b]];
 	(* Vanishing components *)
-	{PPNTensor[met, {-Labels, -Labels}, 1][-LI[0], -LI[0]], 0},
-	{PPNTensor[met, {-Labels, -Tangent[MfSpace]}, 1][-LI[0], -T3a], 0},
-	{PPNTensor[met, {-Tangent[MfSpace], -Tangent[MfSpace]}, 1][-T3a, -T3b], 0},
-	{PPNTensor[met, {-Labels, -Tangent[MfSpace]}, 2][-LI[0], -T3a], 0},
-	{PPNTensor[met, {-Labels, -Labels}, 3][-LI[0], -LI[0]], 0},
-	{PPNTensor[met, {-Tangent[MfSpace], -Tangent[MfSpace]}, 3][-T3a, -T3b], 0},
-	{PPNTensor[met, {-Labels, -Tangent[MfSpace]}, 4][-LI[0], -T3a], 0}
-}];
+	OrderSet[PPN[met, 1][-LI[0], -LI[0]], 0];
+	OrderSet[PPN[met, 1][-LI[0], -T3a]  , 0];
+	OrderSet[PPN[met, 1][-T3a, -T3b]    , 0];
+	OrderSet[PPN[met, 2][-LI[0], -T3a]  , 0];
+	OrderSet[PPN[met, 3][-LI[0], -LI[0]], 0];
+	OrderSet[PPN[met, 3][-T3a, -T3b]    , 0];
+	OrderSet[PPN[met, 4][-LI[0], -T3a]  , 0];
+);
 
-PPNEnMomRules[em_, met_, dens_, pres_, int_, vel_, bkg_] := Flatten[MakeRule[#, MetricOn -> All, ContractMetrics -> True]& /@ {
-	{PPNTensor[em, {-Labels, -Labels}, 0][-LI[0], -LI[0]], 0},
-	{PPNTensor[em, {-Labels, -Tangent[MfSpace]}, 0][-LI[0], -T3a], 0},
-	{PPNTensor[em, {-Tangent[MfSpace], -Tangent[MfSpace]}, 0][-T3a, -T3b], 0},
-	{PPNTensor[em, {-Labels, -Labels}, 1][-LI[0], -LI[0]], 0},
-	{PPNTensor[em, {-Labels, -Tangent[MfSpace]}, 1][-LI[0], -T3a], 0},
-	{PPNTensor[em, {-Tangent[MfSpace], -Tangent[MfSpace]}, 1][-T3a, -T3b], 0},
-	{PPNTensor[em, {-Labels, -Labels}, 2][-LI[0], -LI[0]], dens[]},
-	{PPNTensor[em, {-Labels, -Tangent[MfSpace]}, 2][-LI[0], -T3a], 0},
-	{PPNTensor[em, {-Tangent[MfSpace], -Tangent[MfSpace]}, 2][-T3a, -T3b], 0},
-	{PPNTensor[em, {-Labels, -Labels}, 3][-LI[0], -LI[0]], 0},
-	{PPNTensor[em, {-Labels, -Tangent[MfSpace]}, 3][-LI[0], -T3a], -dens[] * vel[-T3a]},
-	{PPNTensor[em, {-Tangent[MfSpace], -Tangent[MfSpace]}, 3][-T3a, -T3b], 0},
-	{PPNTensor[em, {-Labels, -Labels}, 4][-LI[0], -LI[0]], dens[] * (int[] + vel[T3a] * vel[-T3a] - PPNTensor[met, {-Labels, -Labels}, 2][-LI[0], -LI[0]])} /. PPNRules[met],
-	{PPNTensor[em, {-Labels, -Tangent[MfSpace]}, 4][-LI[0], -T3a], 0},
-	{PPNTensor[em, {-Tangent[MfSpace], -Tangent[MfSpace]}, 4][-T3a, -T3b], dens[] * vel[-T3a] * vel[-T3b] + pres[] * bkg[-T3a, -T3b]}
-}];
+CreateEnMomRules[em_, met_, dens_, pres_, int_, vel_, bkg_] := (
+	OrderSet[PPN[em, 0][-LI[0], -LI[0]], 0];
+	OrderSet[PPN[em, 0][-LI[0], -T3a]  , 0];
+	OrderSet[PPN[em, 0][-T3a, -T3b]    , 0];
+	OrderSet[PPN[em, 1][-LI[0], -LI[0]], 0];
+	OrderSet[PPN[em, 1][-LI[0], -T3a]  , 0];
+	OrderSet[PPN[em, 1][-T3a, -T3b]    , 0];
+	OrderSet[PPN[em, 2][-LI[0], -LI[0]], dens[]];
+	OrderSet[PPN[em, 2][-LI[0], -T3a]  , 0];
+	OrderSet[PPN[em, 2][-T3a, -T3b]    , 0];
+	OrderSet[PPN[em, 3][-LI[0], -LI[0]], 0];
+	OrderSet[PPN[em, 3][-LI[0], -T3a]  , -dens[] * vel[-T3a]];
+	OrderSet[PPN[em, 3][-T3a, -T3b]    , 0];
+	OrderSet[PPN[em, 4][-LI[0], -LI[0]], dens[] * (int[] + vel[T3a] * vel[-T3a] - PPN[met, 2][-LI[0], -LI[0]]) /. PPNRules[met, {-Labels, -Labels}, 2]];
+	OrderSet[PPN[em, 4][-LI[0], -T3a]  , 0];
+	OrderSet[PPN[em, 4][-T3a, -T3b]    , dens[] * vel[-T3a] * vel[-T3b] + pres[] * bkg[-T3a, -T3b]];
+);
 
-PPNInvMetricRules[met_, bkg_] := Module[{imet, ru, n, m},
+CreateInvMetricRules[met_, bkg_] := Module[{imet, ru, n, m},
 	imet = Inv[met];
 
 	(* Zeroth order is background metric. *)
-	ru = Flatten[MakeRule[#, MetricOn -> All, ContractMetrics -> True]& /@ {
-		{PPNTensor[imet, {Labels, Labels}, 0][LI[0], LI[0]], -1},
-		{PPNTensor[imet, {Labels, Tangent[MfSpace]}, 0][LI[0], T3a], 0},
-		{PPNTensor[imet, {Tangent[MfSpace], Tangent[MfSpace]}, 0][T3a, T3b], bkg[T3a, T3b]}
-	}];
+	OrderSet[PPN[imet, 0][LI[0], LI[0]], -1];
+	OrderSet[PPN[imet, 0][LI[0], T3a]  , 0];
+	OrderSet[PPN[imet, 0][T3a, T3b]    , bkg[T3a, T3b]];
 
 	(* Recursive formula for higher orders. *)
 	Do[
-		ru = Flatten[Join[ru, MakeRule[#, MetricOn -> All, ContractMetrics -> True]& /@ Simplify[ToCanonical[{
-			{PPNTensor[imet, {Labels, Labels}, n][LI[0], LI[0]], Sum[PPNTensor[imet, {Labels, Labels}, n - m][LI[0], LI[0]] * PPNTensor[met, {-Labels, -Labels}, m][-LI[0], -LI[0]] + PPNTensor[imet, {Labels, Tangent[MfSpace]}, n - m][LI[0], T3c] * PPNTensor[met, {-Labels, -Tangent[MfSpace]}, m][-LI[0], -T3c], {m, n}]},
-			{PPNTensor[imet, {Labels, Tangent[MfSpace]}, n][LI[0], T3a], Sum[PPNTensor[imet, {Labels, Tangent[MfSpace]}, n - m][LI[0], T3a] * PPNTensor[met, {-Labels, -Labels}, m][-LI[0], -LI[0]] + PPNTensor[imet, {Tangent[MfSpace], Tangent[MfSpace]}, n - m][T3a, T3c] * PPNTensor[met, {-Labels, -Tangent[MfSpace]}, m][-LI[0], -T3c], {m, n}]},
-			{PPNTensor[imet, {Tangent[MfSpace], Tangent[MfSpace]}, n][T3a, T3b], -bkg[T3b, T3d] * Sum[PPNTensor[imet, {Labels, Tangent[MfSpace]}, n - m][LI[0], T3a] * PPNTensor[met, {-Labels, -Tangent[MfSpace]}, m][-LI[0], -T3d] + PPNTensor[imet, {Tangent[MfSpace], Tangent[MfSpace]}, n - m][T3a, T3c] * PPNTensor[met, {-Tangent[MfSpace], -Tangent[MfSpace]}, m][-T3c, -T3d], {m, n}]}
-		} /. ru /. PPNRules[met]]]]],
+		MapThread[OrderSet, {
+			{
+				PPN[imet, n][LI[0], LI[0]],
+				PPN[imet, n][LI[0], T3a],
+				PPN[imet, n][T3a, T3b]
+			},
+			Simplify[ToCanonical[#]]& /@ ({
+				Sum[PPN[imet, n - m][LI[0], LI[0]] * PPN[met, m][-LI[0], -LI[0]] + PPN[imet, n - m][LI[0], T3c] * PPN[met, m][-LI[0], -T3c], {m, n}],
+				Sum[PPN[imet, n - m][LI[0], T3a] * PPN[met, m][-LI[0], -LI[0]] + PPN[imet, n - m][T3a, T3c] * PPN[met, m][-LI[0], -T3c], {m, n}],
+				-bkg[T3b, T3d] * Sum[PPN[imet, n - m][LI[0], T3a] * PPN[met, m][-LI[0], -T3d] + PPN[imet, n - m][T3a, T3c] * PPN[met, m][-T3c, -T3d], {m, n}]
+			} /. PPNRules[met] /. PPNRules[imet])
+		}, 1],
 	{n, $MaxPPNOrder}];
-
-	Return[ru];
 ];
-
+(*
 PPNLeviCivitaRules[cd_, met_] := Module[{expr},
 	expr = {#, ChristoffelToGradMetric[#]}&[Christoffel[cd][T4\[Rho], -T4\[Mu], -T4\[Nu]]];
 	expr = SpaceTimeSplits[#, {T4\[Rho] -> T3c, -T4\[Mu] -> -T3a, -T4\[Nu] -> -T3b}]& /@ expr;
@@ -410,7 +431,7 @@ PPNEinsteinRules[cd_, met_] := Module[{expr},
 	expr = Simplify[ToCanonical[expr /. PPNRules[GiveSymbol[Ricci, cd]] /. PPNRules[GiveSymbol[RicciScalar, cd]] /. PPNRules[met]]];
 	Return[Flatten[MakeRule[#, MetricOn -> All, ContractMetrics -> True]& /@ expr]];
 ];
-
+*)
 SpaceTimeSplit[expr_, reps_] := Module[{fi, res, h, i, x},
 	fi = List @@ IndicesOf[Free, Select[$SumVBundles, BaseOfVBundle[#] === MfSpacetime&]][expr];
 	If[Not[Sort[fi] === Sort[First /@ reps]], Throw[Message[SpaceTimeSplit::error, "Replacement list must contain replacements for all free spacetime indices."]]];
@@ -470,16 +491,13 @@ VelocityOrder[expr : BkgTetradS3[_, _], n_, OptionsPattern[]] := KroneckerDelta[
 
 VelocityOrder[expr : BkgInvTetradS3[_, _], n_, OptionsPattern[]] := KroneckerDelta[n, 0] * expr;
 
-ApplyPPNRulesTo[expr : PPNTensor[head_, slots_, n_][inds___]] := If[And[Head[PPNRules[head]] === List, Or @@ (MatchQ[expr, #]& /@ First /@ PPNRules[head])], expr /. PPNRules[head] /. pt : PPNTensor[_, {___}, _][___] :> ApplyPPNRulesTo[pt], expr];
+ApplyPPNRulesTo[expr : PPNTensor[head_, slots_, n_][inds___]] := If[And[Head[PPNRules[head, slots, n]] === List, Or @@ (MatchQ[expr, #]& /@ First /@ PPNRules[head, slots, n])], expr /. PPNRules[head, slots, n] /. pt : PPNTensor[_, {___}, _][___] :> ApplyPPNRulesTo[pt], expr];
 
-ApplyPPNRulesTo[expr : PPNTensor[head_, slots_, n_][inds___], h_] := If[And[head === h, Head[PPNRules[head]] === List, Or @@ (MatchQ[expr, #]& /@ First /@ PPNRules[head])], expr /. PPNRules[head] /. pt : PPNTensor[h, {___}, _][___] :> ApplyPPNRulesTo[pt, h], expr];
+ApplyPPNRulesTo[expr : PPNTensor[head_, slots_, n_][inds___], h_] := If[And[head === h, Head[PPNRules[head, slots, n]] === List, Or @@ (MatchQ[expr, #]& /@ First /@ PPNRules[head, slots, n])], expr /. PPNRules[head, slots, n] /. pt : PPNTensor[h, {___}, _][___] :> ApplyPPNRulesTo[pt, h], expr];
 
 ApplyPPNRules[expr_] := expr /. pt : PPNTensor[_, {___}, _][___] :> ApplyPPNRulesTo[pt];
 
 ApplyPPNRules[expr_, h_] := expr /. pt : PPNTensor[h, {___}, _][___] :> ApplyPPNRulesTo[pt, h];
-
-PPN[head_ ? xTensorQ][inds___] := ToPPNTensor[head[inds]];
-PPN[head_ ? xTensorQ, n_Integer ? NonNegative][inds___] := ToPPNTensor[head[inds], n];
 
 SortPDsToTime[expr_, head_] := Module[{a, x, t},
 	Return[expr //. ParamD[t : TimePar ..][PD[a_][x_]] /; Not[FreeQ[x, head]] :> PD[a][ParamD[t][x]]];
