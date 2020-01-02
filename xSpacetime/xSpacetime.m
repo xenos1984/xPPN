@@ -244,10 +244,10 @@ CreateTetradTauRules[tet_, tau_, bkt_, bkm_] := Module[{n},
 
 	(* General formula for higher orders. *)
 	Do[
-		OrderSet[PPN[tet, n][LI[0], -LI[0]], -PPN[tau, n][-LI[0], -LI[0]] /. PPNRules[tau]];
-		OrderSet[PPN[tet, n][LI[0], -T3a]  , -PPN[tau, n][-LI[0], -T3a] /. PPNRules[tau]];
-		OrderSet[PPN[tet, n][L3A, -LI[0]]  , bkt[L3A, -T3c] * bkm[T3c, T3d] * PPN[tau, n][-T3d, -LI[0]] /. PPNRules[tau]];
-		OrderSet[PPN[tet, n][L3A, -T3a]    , bkt[L3A, -T3c] * bkm[T3c, T3d] * PPN[tau, n][-T3d, -T3a] /. PPNRules[tau]],
+		OrderSet[PPN[tet, n][LI[0], -LI[0]], -PPN[tau, n][-LI[0], -LI[0]] /. PPNRules[tau, {-Labels, -Labels}, n]];
+		OrderSet[PPN[tet, n][LI[0], -T3a]  , -PPN[tau, n][-LI[0], -T3a] /. PPNRules[tau, {-Labels, -TangentMfSpace}, n]];
+		OrderSet[PPN[tet, n][L3A, -LI[0]]  , bkt[L3A, -T3c] * bkm[T3c, T3d] * PPN[tau, n][-T3d, -LI[0]] /. PPNRules[tau, {-TangentMfSpace, -Labels}, n]];
+		OrderSet[PPN[tet, n][L3A, -T3a]    , bkt[L3A, -T3c] * bkm[T3c, T3d] * PPN[tau, n][-T3d, -T3a] /. PPNRules[tau, {-TangentMfSpace, -TangentMfSpace}, n]],
 	{n, $MaxPPNOrder}];
 ];
 
