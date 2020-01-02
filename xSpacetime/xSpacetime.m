@@ -216,77 +216,84 @@ OrderUnset[PPNTensor[head_, slots_List, o_] ? xTensorQ[inds___]] := TagUnset[hea
 
 (*OrderClear[head] :=*)
 
-PPNTauRules[tau_, bkm_] := Flatten[MakeRule[#, MetricOn -> All, ContractMetrics -> True]& /@ {
+CreateTauRules[tau_, bkm_] := (
 	(* Zeroth order is background metric. *)
-	{PPNTensor[tau, {-Labels, -Labels}, 0][-LI[0], -LI[0]], -1},
-	{PPNTensor[tau, {-Labels, -Tangent[MfSpace]}, 0][-LI[0], -T3a], 0},
-	{PPNTensor[tau, {-Tangent[MfSpace], -Labels}, 0][-T3a, -LI[0]], 0},
-	{PPNTensor[tau, {-Tangent[MfSpace], -Tangent[MfSpace]}, 0][-T3a, -T3b], bkm[-T3a, -T3b]},
-
+	OrderSet[PPN[tau, 0][-LI[0], -LI[0]], -1];
+	OrderSet[PPN[tau, 0][-LI[0], -T3a]  , 0];
+	OrderSet[PPN[tau, 0][-T3a, -LI[0]]  , 0];
+	OrderSet[PPN[tau, 0][-T3a, -T3b]    , bkm[-T3a, -T3b]];
 	(* Vanishing components *)
-	{PPNTensor[tau, {-Labels, -Labels}, 1][-LI[0], -LI[0]], 0},
-	{PPNTensor[tau, {-Labels, -Tangent[MfSpace]}, 1][-LI[0], -T3a], 0},
-	{PPNTensor[tau, {-Tangent[MfSpace], -Labels}, 1][-T3a, -LI[0]], 0},
-	{PPNTensor[tau, {-Tangent[MfSpace], -Tangent[MfSpace]}, 1][-T3a, -T3b], 0},
-	{PPNTensor[tau, {-Labels, -Tangent[MfSpace]}, 2][-LI[0], -T3a], 0},
-	{PPNTensor[tau, {-Tangent[MfSpace], -Labels}, 2][-T3a, -LI[0]], 0},
-	{PPNTensor[tau, {-Labels, -Labels}, 3][-LI[0], -LI[0]], 0},
-	{PPNTensor[tau, {-Tangent[MfSpace], -Tangent[MfSpace]}, 3][-T3a, -T3b], 0},
-	{PPNTensor[tau, {-Labels, -Tangent[MfSpace]}, 4][-LI[0], -T3a], 0},
-	{PPNTensor[tau, {-Tangent[MfSpace], -Labels}, 4][-T3b, -LI[0]], 0}
-}];
+	OrderSet[PPN[tau, 1][-LI[0], -LI[0]], 0];
+	OrderSet[PPN[tau, 1][-LI[0], -T3a]  , 0];
+	OrderSet[PPN[tau, 1][-T3a, -LI[0]]  , 0];
+	OrderSet[PPN[tau, 1][-T3a, -T3b]    , 0];
+	OrderSet[PPN[tau, 2][-LI[0], -T3a]  , 0];
+	OrderSet[PPN[tau, 2][-T3a, -LI[0]]  , 0];
+	OrderSet[PPN[tau, 3][-LI[0], -LI[0]], 0];
+	OrderSet[PPN[tau, 3][-T3a, -T3b]    , 0];
+	OrderSet[PPN[tau, 4][-LI[0], -T3a]  , 0];
+	OrderSet[PPN[tau, 4][-T3b, -LI[0]]  , 0];
+);
 
-PPNTetradTauRules[tet_, tau_, bkt_, bkm_] := Module[{n, ru},
-	ru = Flatten[MakeRule[#, MetricOn -> All, ContractMetrics -> True]& /@ {
-		(* Zeroth order is background tetrad. *)
-		{PPNTensor[tet, {Labels, -Labels}, 0][LI[0], -LI[0]], 1},
-		{PPNTensor[tet, {Labels, -Tangent[MfSpace]}, 0][LI[0], -T3a], 0},
-		{PPNTensor[tet, {LorentzMfSpace, -Labels}, 0][L3A, -LI[0]], 0},
-		{PPNTensor[tet, {LorentzMfSpace, -Tangent[MfSpace]}, 0][L3A, -T3a], bkt[L3A, -T3a]}
-	}];
+CreateTetradTauRules[tet_, tau_, bkt_, bkm_] := Module[{n, ru},
+	(* Zeroth order is background tetrad. *)
+	OrderSet[PPN[tet, 0][LI[0], -LI[0]], 1];
+	OrderSet[PPN[tet, 0][LI[0], -T3a]  , 0];
+	OrderSet[PPN[tet, 0][L3A, -LI[0]]  , 0];
+	OrderSet[PPN[tet, 0][L3A, -T3a]    , bkt[L3A, -T3a]];
 
+	(* General formula for higher orders. *)
 	Do[
-		ru = Join[ru, Flatten[MakeRule[#, MetricOn -> All, ContractMetrics -> True]& /@ ({
-			{PPNTensor[tet, {Labels, -Labels}, n][LI[0], -LI[0]], -PPNTensor[tau, {-Labels, -Labels}, n][-LI[0], -LI[0]]},
-			{PPNTensor[tet, {Labels, -Tangent[MfSpace]}, n][LI[0], -T3a], -PPNTensor[tau, {-Labels, -Tangent[MfSpace]}, n][-LI[0], -T3a]},
-			{PPNTensor[tet, {LorentzMfSpace, -Labels}, n][L3A, -LI[0]], bkt[L3A, -T3c] * bkm[T3c, T3d] * PPNTensor[tau, {-Tangent[MfSpace], -Labels}, n][-T3d, -LI[0]]},
-			{PPNTensor[tet, {LorentzMfSpace, -Tangent[MfSpace]}, n][L3A, -T3a], bkt[L3A, -T3c] * bkm[T3c, T3d] * PPNTensor[tau, {-Tangent[MfSpace], -Tangent[MfSpace]}, n][-T3d, -T3a]}
-		} /. PPNRules[tau])]],
+		OrderSet[PPN[tet, n][LI[0], -LI[0]], -PPN[tau, n][-LI[0], -LI[0]] /. PPNRules[tau]];
+		OrderSet[PPN[tet, n][LI[0], -T3a]  , -PPN[tau, n][-LI[0], -T3a] /. PPNRules[tau]];
+		OrderSet[PPN[tet, n][L3A, -LI[0]]  , bkt[L3A, -T3c] * bkm[T3c, T3d] * PPN[tau, n][-T3d, -LI[0]] /. PPNRules[tau]];
+		OrderSet[PPN[tet, n][L3A, -T3a]    , bkt[L3A, -T3c] * bkm[T3c, T3d] * PPN[tau, n][-T3d, -T3a] /. PPNRules[tau]],
 	{n, $MaxPPNOrder}];
-
-	Return[ru];
 ];
 
-PPNInvTetradRules[itet_, tet_, bkt_] := Module[{ru, n, m},
+CreateInvTetradRules[itet_, tet_, bkt_] := Module[{ru, n, m},
 	(* Zeroth order is background tetrad. *)
-	ru = Flatten[MakeRule[#, MetricOn -> All, ContractMetrics -> True]& /@ {
-		{PPNTensor[itet, {-Labels, Labels}, 0][-LI[0], LI[0]], 1},
-		{PPNTensor[itet, {-Labels, Tangent[MfSpace]}, 0][-LI[0], T3a], 0},
-		{PPNTensor[itet, {-LorentzMfSpace, Labels}, 0][-L3A, LI[0]], 0},
-		{PPNTensor[itet, {-LorentzMfSpace, Tangent[MfSpace]}, 0][-L3A, T3a], bkt[-L3A, T3a]}
-	}];
+	OrderSet[PPN[itet, 0][-LI[0], LI[0]], 1];
+	OrderSet[PPN[itet, 0][-LI[0], T3a]  , 0];
+	OrderSet[PPN[itet, 0][-L3A, LI[0]]  , 0];
+	OrderSet[PPN[itet, 0][-L3A, T3a]    , bkt[-L3A, T3a]];
 
 	(* Recursive formula for higher orders. *)
 	Do[
-		ru = Flatten[Join[ru, MakeRule[#, MetricOn -> All, ContractMetrics -> True]& /@ Simplify[ToCanonical[{
-			{PPNTensor[itet, {-Labels, Labels}, n][-LI[0], LI[0]], -Sum[PPNTensor[itet, {-Labels, Labels}, n - m][-LI[0], LI[0]] * PPNTensor[tet, {Labels, -Labels}, m][LI[0], -LI[0]] + PPNTensor[itet, {-LorentzMfSpace, Labels}, n - m][-L3B, LI[0]] * PPNTensor[tet, {LorentzMfSpace, -Labels}, m][L3B, -LI[0]], {m, n}]},
-			{PPNTensor[itet, {-Labels, Tangent[MfSpace]}, n][-LI[0], T3a], -Sum[PPNTensor[itet, {-Labels, Tangent[MfSpace]}, n - m][-LI[0], T3a] * PPNTensor[tet, {Labels, -Labels}, m][LI[0], -LI[0]] + PPNTensor[itet, {-LorentzMfSpace, Tangent[MfSpace]}, n - m][-L3B, T3a] * PPNTensor[tet, {LorentzMfSpace, -Labels}, m][L3B, -LI[0]], {m, n}]},
-			{PPNTensor[itet, {-LorentzMfSpace, Labels}, n][-L3A, LI[0]], -Sum[PPNTensor[itet, {-Labels, Labels}, n - m][-LI[0], LI[0]] * PPNTensor[tet, {Labels, -Tangent[MfSpace]}, m][LI[0], -T3b] * bkt[-L3A, T3b] + PPNTensor[itet, {-LorentzMfSpace, Labels}, n - m][-L3B, LI[0]] * PPNTensor[tet, {LorentzMfSpace, -Tangent[MfSpace]}, m][L3B, -T3b] * bkt[-L3A, T3b], {m, n}]},
-			{PPNTensor[itet, {-LorentzMfSpace, Tangent[MfSpace]}, n][-L3A, T3a], -Sum[PPNTensor[itet, {-Labels, Tangent[MfSpace]}, n - m][-LI[0], T3a] * PPNTensor[tet, {Labels, -Tangent[MfSpace]}, m][LI[0], -T3b] * bkt[-L3A, T3b] + PPNTensor[itet, {-LorentzMfSpace, Tangent[MfSpace]}, n - m][-L3B, T3a] * PPNTensor[tet, {LorentzMfSpace, -Tangent[MfSpace]}, m][L3B, -T3b] * bkt[-L3A, T3b], {m, n}]}
-		} /. ru /. PPNRules[tet]]]]],
+		MapThread[OrderSet, {
+			{
+				PPN[itet, n][-LI[0], LI[0]],
+				PPN[itet, n][-LI[0], T3a],
+				PPN[itet, n][-L3A, LI[0]],
+				PPN[itet, n][-L3A, T3a]
+			},
+			Simplify[ToCanonical[#]]& /@ ({
+				-Sum[PPN[itet, n - m][-LI[0], LI[0]] * PPN[tet, m][LI[0], -LI[0]] + PPN[itet, n - m][-L3B, LI[0]] * PPN[tet, m][L3B, -LI[0]], {m, n}],
+				-Sum[PPN[itet, n - m][-LI[0], T3a] * PPN[tet, m][LI[0], -LI[0]] + PPN[itet, n - m][-L3B, T3a] * PPN[tet, m][L3B, -LI[0]], {m, n}],
+				-Sum[PPN[itet, n - m][-LI[0], LI[0]] * PPN[tet, m][LI[0], -T3b] * bkt[-L3A, T3b] + PPN[itet, n - m][-L3B, LI[0]] * PPN[tet, m][L3B, -T3b] * bkt[-L3A, T3b], {m, n}],
+				-Sum[PPN[itet, n - m][-LI[0], T3a] * PPN[tet, m][LI[0], -T3b] * bkt[-L3A, T3b] + PPN[itet, n - m][-L3B, T3a] * PPN[tet, m][L3B, -T3b] * bkt[-L3A, T3b], {m, n}]
+			} /. PPNRules[tet] /. PPNRules[itet])
+		}, 1],
 	{n, $MaxPPNOrder}];
-
-	Return[ru];
 ];
 
-PPNMetricTauRules[met_, tau_, bkm_] := Module[{n, m},
-	Return[Flatten[Table[MakeRule[#, MetricOn -> All, ContractMetrics -> True]& /@ ({
-			{PPNTensor[met, {-Labels, -Labels}, n][-LI[0], -LI[0]], Sum[bkm[T3c, T3d] * PPNTensor[tau, {-Tangent[MfSpace], -Labels}, n - m][-T3c, -LI[0]] * PPNTensor[tau, {-Tangent[MfSpace], -Labels}, m][-T3d, -LI[0]] - PPNTensor[tau, {-Labels, -Labels}, n - m][-LI[0], -LI[0]] * PPNTensor[tau, {-Labels, -Labels}, m][-LI[0], -LI[0]], {m, 0, n}]},
-			{PPNTensor[met, {-Labels, -Tangent[MfSpace]}, n][-LI[0], -T3a], Sum[bkm[T3c, T3d] * PPNTensor[tau, {-Tangent[MfSpace], -Labels}, n - m][-T3c, -LI[0]] * PPNTensor[tau, {-Tangent[MfSpace], -Tangent[MfSpace]}, m][-T3d, -T3a] - PPNTensor[tau, {-Labels, -Labels}, n - m][-LI[0], -LI[0]] * PPNTensor[tau, {-Labels, -Tangent[MfSpace]}, m][-LI[0], -T3a], {m, 0, n}]},
-			{PPNTensor[met, {-Tangent[MfSpace], -Tangent[MfSpace]}, n][-T3a, -T3b], Sum[bkm[T3c, T3d] * PPNTensor[tau, {-Tangent[MfSpace], -Tangent[MfSpace]}, n - m][-T3c, -T3a] * PPNTensor[tau, {-Tangent[MfSpace], -Tangent[MfSpace]}, m][-T3d, -T3b] - PPNTensor[tau, {-Labels, -Tangent[MfSpace]}, n - m][-LI[0], -T3a] * PPNTensor[tau, {-Labels, -Tangent[MfSpace]}, m][-LI[0], -T3b], {m, 0, n}]}
-		} /. PPNRules[tau]), {n, 0, $MaxPPNOrder}]]];
+CreateMetricTauRules[met_, tau_, bkm_] := Module[{n, m},
+	Do[
+		MapThread[OrderSet, {
+			{
+				PPN[met, n][-LI[0], -LI[0]],
+				PPN[met, n][-LI[0], -T3a],
+				PPN[met, n][-T3a, -T3b]
+			},
+			Simplify[ToCanonical[#]]& /@ ({
+				Sum[bkm[T3c, T3d] * PPN[tau, n - m][-T3c, -LI[0]] * PPN[tau, m][-T3d, -LI[0]] - PPN[tau, n - m][-LI[0], -LI[0]] * PPN[tau, m][-LI[0], -LI[0]], {m, 0, n}],
+				Sum[bkm[T3c, T3d] * PPN[tau, n - m][-T3c, -LI[0]] * PPN[tau, m][-T3d, -T3a] - PPN[tau, n - m][-LI[0], -LI[0]] * PPN[tau, m][-LI[0], -T3a], {m, 0, n}],
+				Sum[bkm[T3c, T3d] * PPN[tau, n - m][-T3c, -T3a] * PPN[tau, m][-T3d, -T3b] - PPN[tau, n - m][-LI[0], -T3a] * PPN[tau, m][-LI[0], -T3b], {m, 0, n}]
+			} /. PPNRules[tau])
+		}, 1],
+	{n, 0, $MaxPPNOrder}];
 ];
-
+(*
 PPNWeitzRules[fd_, tet_, itet_] := Module[{expr},
 	expr = {Christoffel[fd][T4\[Rho], -T4\[Mu], -T4\[Nu]], itet[-L4\[CapitalAlpha], T4\[Rho]] * PD[-T4\[Mu]][tet[L4\[CapitalAlpha], -T4\[Nu]]]};
 	expr = SpaceTimeSplits[#, {T4\[Rho] -> T3c, -T4\[Mu] -> -T3a, -T4\[Nu] -> -T3b}]& /@ expr;
@@ -316,7 +323,7 @@ PPNContortionRules[cd_, fd_] := Module[{expr},
 	expr = Simplify[ToCanonical[expr /. PPNRules[GiveSymbol[Christoffel, cd]] /. PPNRules[GiveSymbol[Christoffel, fd]]]];
 	Return[Flatten[MakeRule[#, MetricOn -> All, ContractMetrics -> True]& /@ expr]];
 ];
-
+*)
 CreateMetricRules[met_, bkg_] := (
 	(* Zeroth order is background metric. *)
 	OrderSet[PPN[met, 0][-LI[0], -LI[0]], -1];
@@ -404,7 +411,6 @@ CreateRiemannDownRules[cd_, met_] := Module[{expr},
 	expr = Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]];
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
 	expr = Simplify[ToCanonical[expr /. PPNRules[GiveSymbol[Christoffel, cd]] /. PPNRules[met]]];
-	Print[TableForm[expr]];
 	MapThread[OrderSet, Transpose[expr], 1];
 ];
 

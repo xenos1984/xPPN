@@ -22,24 +22,27 @@ Begin["xAct`xPPN`Private`"]
 
 AutomaticRules[InvTet, MakeRule[{InvTet[-L4\[CapitalAlpha], T4\[Mu]] * Tet[L4\[CapitalAlpha], -T4\[Nu]], delta[-T4\[Nu], T4\[Mu]]}, MetricOn -> All, ContractMetrics -> True]];
 
-PPNRules[Tau] ^= PPNTauRules[Tau, BkgMetricS3];
-PPNRules[Tet] ^= PPNTetradTauRules[Tet, Tau, BkgTetradS3, BkgMetricS3];
-PPNRules[InvTet] ^= PPNInvTetradRules[InvTet, Tet, BkgInvTetradS3];
-PPNRules[GiveSymbol[Christoffel, FD]] ^= PPNWeitzRules[FD, Tet, InvTet];
-PPNRules[GiveSymbol[Torsion, FD]] ^= PPNTorsionRules[FD];
-PPNRules[Met] ^= PPNMetricTauRules[Met, Tau, BkgMetricS3];
-PPNRules[GiveSymbol[Inv, Met]] ^= PPNInvMetricRules[Met, BkgMetricS3];
-PPNRules[GiveSymbol[Christoffel, CD]] ^= PPNLeviCivitaRules[CD, Met];
-PPNRules[GiveSymbol[Riemann, CD]] ^= PPNRiemannRules[CD];
-PPNRules[GiveSymbol[RiemannDown, CD]] ^= PPNRiemannDownRules[CD, Met];
-PPNRules[GiveSymbol[Ricci, CD]] ^= PPNRicciRules[CD, Met];
-PPNRules[GiveSymbol[RicciScalar, CD]] ^= PPNRicciScalarRules[CD, Met];
-PPNRules[GiveSymbol[Einstein, CD]] ^= PPNEinsteinRules[CD, Met];
-PPNRules[GiveSymbol[Christoffel, CD, FD]] ^= PPNContortionRules[CD, FD];
+CreateTauRules[Tau, BkgMetricS3];
+CreateTetradTauRules[Tet, Tau, BkgTetradS3, BkgMetricS3];
+CreateInvTetradRules[InvTet, Tet, BkgInvTetradS3];
 
-PPNRules[EnergyMomentum] ^= PPNEnMomRules[EnergyMomentum, Met, Density, Pressure, InternalEnergy, Velocity, BkgMetricS3];
+CreateMetricTauRules[Met, Tau, BkgMetricS3];
+CreateInvMetricRules[Met, BkgMetricS3];
 
-MetricToStandard[expr_] := expr //. Join[StandardMetricRules[Met, BkgMetricS3], PPNMetricRules[Met, BkgMetricS3]];
+CreateLeviCivitaRules[CD, Met];
+CreateRiemannRules[CD];
+CreateRiemannDownRules[CD, Met];
+CreateRicciRules[CD, Met];
+CreateRicciScalarRules[CD, Met];
+CreateEinsteinRules[CD, Met];
+(*
+CreateWeitzRules[FD, Tet, InvTet];
+CreateTorsionRules[FD];
+CreateContortionRules[CD, FD];
+*)
+CreateEnMomRules[EnergyMomentum, Met, Density, Pressure, InternalEnergy, Velocity, BkgMetricS3];
+
+MetricToStandard[expr_] := expr //. StandardMetricRules[Met, BkgMetricS3] //. PPNRules[Met];
 
 End[]
 
