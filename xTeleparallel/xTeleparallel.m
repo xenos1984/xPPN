@@ -35,11 +35,11 @@ CreateRiemannDownRules[CD, Met];
 CreateRicciRules[CD, Met];
 CreateRicciScalarRules[CD, Met];
 CreateEinsteinRules[CD, Met];
-(*
+
 CreateWeitzRules[FD, Tet, InvTet];
 CreateTorsionRules[FD];
 CreateContortionRules[CD, FD];
-*)
+
 CreateEnMomRules[EnergyMomentum, Met, Density, Pressure, InternalEnergy, Velocity, BkgMetricS3];
 
 MetricToStandard[expr_] := expr //. StandardMetricRules[Met, BkgMetricS3] //. PPNRules[Met];

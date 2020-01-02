@@ -293,37 +293,39 @@ CreateMetricTauRules[met_, tau_, bkm_] := Module[{n, m},
 		}, 1],
 	{n, 0, $MaxPPNOrder}];
 ];
-(*
-PPNWeitzRules[fd_, tet_, itet_] := Module[{expr},
+
+CreateWeitzRules[fd_, tet_, itet_] := Module[{expr},
 	expr = {Christoffel[fd][T4\[Rho], -T4\[Mu], -T4\[Nu]], itet[-L4\[CapitalAlpha], T4\[Rho]] * PD[-T4\[Mu]][tet[L4\[CapitalAlpha], -T4\[Nu]]]};
 	expr = SpaceTimeSplits[#, {T4\[Rho] -> T3c, -T4\[Mu] -> -T3a, -T4\[Nu] -> -T3b}]& /@ expr;
 	expr = Union[Flatten[Transpose[expr, {4, 1, 2, 3}], 2], SameTest -> (SameQ @@ (Head /@ First /@ {##})&)];
 	expr = Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]];
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
 	expr = Simplify[ToCanonical[expr /. PPNRules[itet] /. PPNRules[tet]]];
-	Return[Flatten[MakeRule[#, MetricOn -> All, ContractMetrics -> True]& /@ expr]];
+	MapThread[OrderSet, Transpose[expr], 1];
 ];
 
-PPNTorsionRules[fd_] := Module[{expr},
+CreateTorsionRules[fd_] := Module[{expr},
 	expr = {#, TorsionToChristoffel[#]}&[Torsion[fd][T4\[Rho], -T4\[Mu], -T4\[Nu]]];
 	expr = SpaceTimeSplits[#, {T4\[Rho] -> T3c, -T4\[Mu] -> -T3a, -T4\[Nu] -> -T3b}]& /@ expr;
+	expr = Map[Simplify[ToCanonical[#]]&, expr, {4}];
 	expr = Union[DeleteCases[DeleteCases[Flatten[Transpose[expr, {4, 1, 2, 3}], 2], {0, _}], {-_, _}], SameTest -> (SameQ @@ (Head /@ First /@ {##})&)];
 	expr = Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]];
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
 	expr = Simplify[ToCanonical[expr /. PPNRules[GiveSymbol[Christoffel, fd]]]];
-	Return[Flatten[MakeRule[#, MetricOn -> All, ContractMetrics -> True]& /@ expr]];
+	MapThread[OrderSet, Transpose[expr], 1];
 ];
 
-PPNContortionRules[cd_, fd_] := Module[{expr},
+CreateContortionRules[cd_, fd_] := Module[{expr},
 	expr = {#, BreakChristoffel[#]}&[Christoffel[cd, fd][T4\[Rho], -T4\[Mu], -T4\[Nu]]];
 	expr = SpaceTimeSplits[#, {T4\[Rho] -> T3c, -T4\[Mu] -> -T3a, -T4\[Nu] -> -T3b}]& /@ expr;
+	expr = Map[Simplify[ToCanonical[#]]&, expr, {4}];
 	expr = Union[DeleteCases[DeleteCases[Flatten[Transpose[expr, {4, 1, 2, 3}], 2], {0, _}], {-_, _}], SameTest -> (SameQ @@ (Head /@ First /@ {##})&)];
 	expr = Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]];
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
 	expr = Simplify[ToCanonical[expr /. PPNRules[GiveSymbol[Christoffel, cd]] /. PPNRules[GiveSymbol[Christoffel, fd]]]];
-	Return[Flatten[MakeRule[#, MetricOn -> All, ContractMetrics -> True]& /@ expr]];
+	MapThread[OrderSet, Transpose[expr], 1];
 ];
-*)
+
 CreateMetricRules[met_, bkg_] := (
 	(* Zeroth order is background metric. *)
 	OrderSet[PPN[met, 0][-LI[0], -LI[0]], -1];
