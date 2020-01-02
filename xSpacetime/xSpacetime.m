@@ -235,7 +235,7 @@ CreateTauRules[tau_, bkm_] := (
 	OrderSet[PPN[tau, 4][-T3b, -LI[0]]  , 0];
 );
 
-CreateTetradTauRules[tet_, tau_, bkt_, bkm_] := Module[{n, ru},
+CreateTetradTauRules[tet_, tau_, bkt_, bkm_] := Module[{n},
 	(* Zeroth order is background tetrad. *)
 	OrderSet[PPN[tet, 0][LI[0], -LI[0]], 1];
 	OrderSet[PPN[tet, 0][LI[0], -T3a]  , 0];
@@ -251,7 +251,7 @@ CreateTetradTauRules[tet_, tau_, bkt_, bkm_] := Module[{n, ru},
 	{n, $MaxPPNOrder}];
 ];
 
-CreateInvTetradRules[itet_, tet_, bkt_] := Module[{ru, n, m},
+CreateInvTetradRules[itet_, tet_, bkt_] := Module[{n, m},
 	(* Zeroth order is background tetrad. *)
 	OrderSet[PPN[itet, 0][-LI[0], LI[0]], 1];
 	OrderSet[PPN[itet, 0][-LI[0], T3a]  , 0];
@@ -359,7 +359,7 @@ CreateEnMomRules[em_, met_, dens_, pres_, int_, vel_, bkg_] := (
 	OrderSet[PPN[em, 4][-T3a, -T3b]    , dens[] * vel[-T3a] * vel[-T3b] + pres[] * bkg[-T3a, -T3b]];
 );
 
-CreateInvMetricRules[met_, bkg_] := Module[{imet, ru, n, m},
+CreateInvMetricRules[met_, bkg_] := Module[{imet, n, m},
 	imet = Inv[met];
 
 	(* Zeroth order is background metric. *)
