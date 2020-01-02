@@ -14,13 +14,14 @@ Begin["xAct`xPPN`Private`"]
 
 CreateMetricRules[Met, BkgMetricS3];
 CreateInvMetricRules[Met, BkgMetricS3];
-(*PPNRules[GiveSymbol[Christoffel, CD]] ^= PPNLeviCivitaRules[CD, Met];
-PPNRules[GiveSymbol[Riemann, CD]] ^= PPNRiemannRules[CD];
-PPNRules[GiveSymbol[RiemannDown, CD]] ^= PPNRiemannDownRules[CD, Met];
-PPNRules[GiveSymbol[Ricci, CD]] ^= PPNRicciRules[CD, Met];
-PPNRules[GiveSymbol[RicciScalar, CD]] ^= PPNRicciScalarRules[CD, Met];
-PPNRules[GiveSymbol[Einstein, CD]] ^= PPNEinsteinRules[CD, Met];
-*)
+
+CreateLeviCivitaRules[CD, Met];
+CreateRiemannRules[CD];
+CreateRiemannDownRules[CD, Met];
+CreateRicciRules[CD, Met];
+CreateRicciScalarRules[CD, Met];
+CreateEinsteinRules[CD, Met];
+
 CreateEnMomRules[EnergyMomentum, Met, Density, Pressure, InternalEnergy, Velocity, BkgMetricS3];
 
 MetricToStandard[expr_] := expr //. Join[StandardMetricRules[Met, BkgMetricS3], PPNRules[Met]];

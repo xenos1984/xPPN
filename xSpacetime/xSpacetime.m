@@ -204,7 +204,7 @@ xTension["xPPN`", DefTensor, "End"] = DefTensorEnd;
 
 PPNRules[_, _List, _Integer] := {};
 
-PPNRules[head_, o_Integer] := Flatten[Outer[PPNRules[head, {##}, o]&, Sequence @@ (List /@ SlotsOfTensor[head] /. {{Tangent[MfSpacetime]} -> {Labels, Tangent[MfSpace]}, {-Tangent[MfSpacetime]} -> {-Labels, -Tangent[MfSpace]}, {LorentzMfSpacetime} -> {Labels, LorentzMfSpace}, {-LorentzMfSpacetime} -> {-Labels, -LorentzMfSpace}})]];
+PPNRules[head_, o_Integer] := Flatten[If[SlotsOfTensor[head] == {}, PPNRules[head, {}, o], Outer[PPNRules[head, {##}, o]&, Sequence @@ (List /@ SlotsOfTensor[head] /. {{Tangent[MfSpacetime]} -> {Labels, Tangent[MfSpace]}, {-Tangent[MfSpacetime]} -> {-Labels, -Tangent[MfSpace]}, {LorentzMfSpacetime} -> {Labels, LorentzMfSpace}, {-LorentzMfSpacetime} -> {-Labels, -LorentzMfSpace}})]]];
 
 PPNRules[head_, slots_List] := Flatten[PPNRules[head, slots, #]& /@ Range[0, $MaxPPNOrder]];
 
@@ -374,64 +374,67 @@ CreateInvMetricRules[met_, bkg_] := Module[{imet, ru, n, m},
 		}, 1],
 	{n, $MaxPPNOrder}];
 ];
-(*
-PPNLeviCivitaRules[cd_, met_] := Module[{expr},
+
+CreateLeviCivitaRules[cd_, met_] := Module[{expr},
 	expr = {#, ChristoffelToGradMetric[#]}&[Christoffel[cd][T4\[Rho], -T4\[Mu], -T4\[Nu]]];
 	expr = SpaceTimeSplits[#, {T4\[Rho] -> T3c, -T4\[Mu] -> -T3a, -T4\[Nu] -> -T3b}]& /@ expr;
 	expr = Union[Flatten[Transpose[expr, {4, 1, 2, 3}], 2], SameTest -> (SameQ @@ (Head /@ First /@ {##})&)];
 	expr = Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]];
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
 	expr = Simplify[ToCanonical[expr /. PPNRules[Inv[met]] /. PPNRules[met]]];
-	Return[Flatten[MakeRule[#, MetricOn -> All, ContractMetrics -> True]& /@ expr]];
+	MapThread[OrderSet, Transpose[expr], 1];
 ];
 
-PPNRiemannRules[cd_] := Module[{expr},
+CreateRiemannRules[cd_] := Module[{expr},
 	expr = {#, ChangeCurvature[#, cd, PD]}&[Riemann[cd][-T4\[Nu], -T4\[Mu], -T4\[Sigma], T4\[Rho]]];
 	expr = SpaceTimeSplits[#, {T4\[Rho] -> T3c, -T4\[Sigma] -> -T3d, -T4\[Mu] -> -T3a, -T4\[Nu] -> -T3b}]& /@ expr;
+	expr = Map[Simplify[ToCanonical[#]]&, expr, {5}];
 	expr = Union[DeleteCases[DeleteCases[Flatten[Transpose[expr, {5, 1, 2, 3, 4}], 3], {0, _}], {-_, _}], SameTest -> (SameQ @@ (Head /@ First /@ {##})&)];
 	expr = Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]];
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
 	expr = Simplify[ToCanonical[expr /. PPNRules[GiveSymbol[Christoffel, cd]]]];
-	Return[Flatten[MakeRule[#, MetricOn -> All, ContractMetrics -> True]& /@ expr]];
+	MapThread[OrderSet, Transpose[expr], 1];
 ];
 
-PPNRiemannDownRules[cd_, met_] := Module[{expr},
+CreateRiemannDownRules[cd_, met_] := Module[{expr},
 	expr = {#, ChangeCurvature[RiemannDownToRiemann[#], cd, PD]}&[RiemannDown[cd][-T4\[Nu], -T4\[Mu], -T4\[Sigma], -T4\[Rho]]];
 	expr = SpaceTimeSplits[#, {-T4\[Rho] -> -T3c, -T4\[Sigma] -> -T3d, -T4\[Mu] -> -T3a, -T4\[Nu] -> -T3b}]& /@ expr;
+	expr = Map[Simplify[ToCanonical[#]]&, expr, {5}];
 	expr = Union[DeleteCases[DeleteCases[Flatten[Transpose[expr, {5, 1, 2, 3, 4}], 3], {0, _}], {-_, _}], SameTest -> (SameQ @@ (Head /@ First /@ {##})&)];
 	expr = Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]];
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
 	expr = Simplify[ToCanonical[expr /. PPNRules[GiveSymbol[Christoffel, cd]] /. PPNRules[met]]];
-	Return[Flatten[MakeRule[#, MetricOn -> All, ContractMetrics -> True]& /@ expr]];
+	Print[TableForm[expr]];
+	MapThread[OrderSet, Transpose[expr], 1];
 ];
 
-PPNRicciRules[cd_, met_] := Module[{expr},
+CreateRicciRules[cd_, met_] := Module[{expr},
 	expr = {Ricci[cd][-T4\[Mu], -T4\[Nu]], RiemannDown[cd][-T4\[Mu], -T4\[Rho], -T4\[Nu], -T4\[Sigma]] * Inv[met][T4\[Rho], T4\[Sigma]]};
 	expr = SpaceTimeSplits[#, {-T4\[Mu] -> -T3a, -T4\[Nu] -> -T3b}]& /@ expr;
 	expr = Union[Flatten[Transpose[expr, {3, 1, 2}], 1], SameTest -> (SameQ @@ (Head /@ First /@ {##})&)];
 	expr = Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]];
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
 	expr = Simplify[ToCanonical[expr /. PPNRules[GiveSymbol[RiemannDown, cd]] /. PPNRules[Inv[met]]]];
-	Return[Flatten[MakeRule[#, MetricOn -> All, ContractMetrics -> True]& /@ expr]];
+	MapThread[OrderSet, Transpose[expr], 1];
 ];
 
-PPNRicciScalarRules[cd_, met_] := Module[{expr},
+CreateRicciScalarRules[cd_, met_] := Module[{expr},
 	expr = {SpaceTimeSplits[RicciScalar[cd][], {}], Tr[SpaceTimeSplits[Ricci[cd][-T4\[Mu], -T4\[Nu]], {-T4\[Mu] -> -T3a, -T4\[Nu] -> -T3b}] . Transpose[SpaceTimeSplits[Inv[met][T4\[Mu], T4\[Nu]], {T4\[Mu] -> T3a, T4\[Nu] -> T3b}]]]};
 	expr = Transpose[Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]]];
 	expr = Simplify[ToCanonical[expr /. PPNRules[GiveSymbol[Ricci, cd]] /. PPNRules[Inv[met]]]];
-	Return[Flatten[MakeRule[#, MetricOn -> All, ContractMetrics -> True]& /@ expr]];
+	MapThread[OrderSet, Transpose[expr], 1];
 ];
 
-PPNEinsteinRules[cd_, met_] := Module[{expr},
+CreateEinsteinRules[cd_, met_] := Module[{expr},
 	expr = {#, EinsteinToRicci[#]}&[Einstein[cd][-T4\[Mu], -T4\[Nu]]];
 	expr = SpaceTimeSplits[#, {-T4\[Mu] -> -T3a, -T4\[Nu] -> -T3b}]& /@ expr;
 	expr = Union[Flatten[Transpose[expr, {3, 1, 2}], 1], SameTest -> (SameQ @@ (Head /@ First /@ {##})&)];
 	expr = Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]];
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
 	expr = Simplify[ToCanonical[expr /. PPNRules[GiveSymbol[Ricci, cd]] /. PPNRules[GiveSymbol[RicciScalar, cd]] /. PPNRules[met]]];
-	Return[Flatten[MakeRule[#, MetricOn -> All, ContractMetrics -> True]& /@ expr]];
+	MapThread[OrderSet, Transpose[expr], 1];
 ];
-*)
+
 SpaceTimeSplit[expr_, reps_] := Module[{fi, res, h, i, x},
 	fi = List @@ IndicesOf[Free, Select[$SumVBundles, BaseOfVBundle[#] === MfSpacetime&]][expr];
 	If[Not[Sort[fi] === Sort[First /@ reps]], Throw[Message[SpaceTimeSplit::error, "Replacement list must contain replacements for all free spacetime indices."]]];
