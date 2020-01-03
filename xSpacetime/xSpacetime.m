@@ -226,21 +226,32 @@ CreateXiRules[xi_] := (
 	OrderSet[PPN[xi, 4][T3a]  , 0];
 );
 
-CreateCoincRules[nm_, xi_] := Module[{expr, n},
-	expr = Christoffel[nm][T4\[Rho], -T4\[Mu], -T4\[Nu]];
+CreateCoincRules[nd_, xi_] := Module[{expr, n},
+	expr = Christoffel[nd][T4\[Rho], -T4\[Mu], -T4\[Nu]];
 	expr = SpaceTimeSplits[expr, {T4\[Rho] -> T3c, -T4\[Mu] -> -T3a, -T4\[Nu] -> -T3b}];
 	expr = Union[Flatten[expr], SameTest -> (SameQ @@ (Head /@ {##})&)];
 	expr = VelocityOrder[#, 0]& /@ expr;
 	OrderSet[#, 0]& /@ expr;
 
 	Do[
-		expr = {Christoffel[nm][T4\[Rho], -T4\[Mu], -T4\[Nu]], PD[-T4\[Mu]][PD[-T4\[Nu]][xi[T4\[Rho]]]] - PD[-T4\[Sigma]][xi[T4\[Rho]]] * Christoffel[nm][T4\[Sigma], -T4\[Mu], -T4\[Nu]]};
+		expr = {Christoffel[nd][T4\[Rho], -T4\[Mu], -T4\[Nu]], PD[-T4\[Mu]][PD[-T4\[Nu]][xi[T4\[Rho]]]] - PD[-T4\[Sigma]][xi[T4\[Rho]]] * Christoffel[nd][T4\[Sigma], -T4\[Mu], -T4\[Nu]]};
 		expr = SpaceTimeSplits[#, {T4\[Rho] -> T3c, -T4\[Mu] -> -T3a, -T4\[Nu] -> -T3b}]& /@ expr;
 		expr = Union[Flatten[Transpose[expr, {4, 1, 2, 3}], 2], SameTest -> (SameQ @@ (Head /@ First /@ {##})&)];
 		expr = Map[VelocityOrder[#, n]&, expr, {2}];
-		expr = Simplify[ToCanonical[expr /. PPNRules[xi] /. PPNRules[GiveSymbol[Christoffel, nm]]]];
+		expr = Simplify[ToCanonical[expr /. PPNRules[xi] /. PPNRules[GiveSymbol[Christoffel, nd]]]];
 		MapThread[OrderSet, Transpose[expr], 1],
 	{n, $MaxPPNOrder}];
+];
+
+CreateNonMetRules[nm_, nd_, met_] := Module[{expr},
+	expr = {nm[-T4\[Rho], -T4\[Mu], -T4\[Nu]], ChangeCovD[nd[-T4\[Rho]][met[-T4\[Mu], -T4\[Nu]]], nd, PD]};
+	expr = SpaceTimeSplits[#, {-T4\[Rho] -> -T3c, -T4\[Mu] -> -T3a, -T4\[Nu] -> -T3b}]& /@ expr;
+	expr = Map[Simplify[ToCanonical[#]]&, expr, {4}];
+	expr = Union[Flatten[Transpose[expr, {4, 1, 2, 3}], 2], SameTest -> (SameQ @@ (Head /@ First /@ {##})&)];
+	expr = Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]];
+	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
+	expr = Simplify[ToCanonical[expr /. PPNRules[met] /. PPNRules[GiveSymbol[Christoffel, nd]]]];
+	MapThread[OrderSet, Transpose[expr], 1];
 ];
 
 CreateTauRules[tau_, bkm_] := (
@@ -324,6 +335,7 @@ CreateMetricTauRules[met_, tau_, bkm_] := Module[{n, m},
 CreateWeitzRules[fd_, tet_, itet_] := Module[{expr},
 	expr = {Christoffel[fd][T4\[Rho], -T4\[Mu], -T4\[Nu]], itet[-L4\[CapitalAlpha], T4\[Rho]] * PD[-T4\[Mu]][tet[L4\[CapitalAlpha], -T4\[Nu]]]};
 	expr = SpaceTimeSplits[#, {T4\[Rho] -> T3c, -T4\[Mu] -> -T3a, -T4\[Nu] -> -T3b}]& /@ expr;
+	expr = Map[Simplify[ToCanonical[#]]&, expr, {4}];
 	expr = Union[Flatten[Transpose[expr, {4, 1, 2, 3}], 2], SameTest -> (SameQ @@ (Head /@ First /@ {##})&)];
 	expr = Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]];
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
@@ -342,14 +354,14 @@ CreateTorsionRules[fd_] := Module[{expr},
 	MapThread[OrderSet, Transpose[expr], 1];
 ];
 
-CreateContortionRules[cd_, fd_] := Module[{expr},
-	expr = {#, BreakChristoffel[#]}&[Christoffel[cd, fd][T4\[Rho], -T4\[Mu], -T4\[Nu]]];
+CreateConnDiffRules[cd_, xd_] := Module[{expr},
+	expr = {#, BreakChristoffel[#]}&[Christoffel[cd, xd][T4\[Rho], -T4\[Mu], -T4\[Nu]]];
 	expr = SpaceTimeSplits[#, {T4\[Rho] -> T3c, -T4\[Mu] -> -T3a, -T4\[Nu] -> -T3b}]& /@ expr;
 	expr = Map[Simplify[ToCanonical[#]]&, expr, {4}];
 	expr = Union[DeleteCases[DeleteCases[Flatten[Transpose[expr, {4, 1, 2, 3}], 2], {0, _}], {-_, _}], SameTest -> (SameQ @@ (Head /@ First /@ {##})&)];
 	expr = Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]];
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
-	expr = Simplify[ToCanonical[expr /. PPNRules[GiveSymbol[Christoffel, cd]] /. PPNRules[GiveSymbol[Christoffel, fd]]]];
+	expr = Simplify[ToCanonical[expr /. PPNRules[GiveSymbol[Christoffel, cd]] /. PPNRules[GiveSymbol[Christoffel, xd]]]];
 	MapThread[OrderSet, Transpose[expr], 1];
 ];
 

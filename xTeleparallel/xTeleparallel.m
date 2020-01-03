@@ -38,7 +38,7 @@ CreateEinsteinRules[CD, Met];
 
 CreateWeitzRules[FD, Tet, InvTet];
 CreateTorsionRules[FD];
-CreateContortionRules[CD, FD];
+CreateConnDiffRules[CD, FD];
 
 CreateEnMomRules[EnergyMomentum, Met, Density, Pressure, InternalEnergy, Velocity, BkgMetricS3];
 
