@@ -556,7 +556,9 @@ SortPDsToTime[expr_, head_] := Module[{a, x, t},
 SortPDsToDiv[expr_, head_] := Module[{ru, a, b, x, t},
 	ru = {
 		PD[a_][ParamD[t : TimePar ..][x_]] /; Not[FreeQ[x, head[___, ChangeIndex[a], ___]]] :> ParamD[t][PD[a][x]],
-		PD[a_][PD[b_][x_]] /; And[FreeQ[x, head[___, ChangeIndex[b], ___]], Not[FreeQ[x, head[___, ChangeIndex[a], ___]]]] :> PD[b][PD[a][x]]
+		PD[a_][PD[b_][x_]] /; And[FreeQ[x, head[___, ChangeIndex[b], ___]], Not[FreeQ[x, head[___, ChangeIndex[a], ___]]]] :> PD[b][PD[a][x]],
+		PD[a_][ParamD[t : TimePar ..][x_]] /; Not[FreeQ[x, PPNTensor[head, __][___, ChangeIndex[a], ___]]] :> ParamD[t][PD[a][x]],
+		PD[a_][PD[b_][x_]] /; And[FreeQ[x, PPNTensor[head, __][___, ChangeIndex[b], ___]], Not[FreeQ[x, PPNTensor[head, __][___, ChangeIndex[a], ___]]]] :> PD[b][PD[a][x]]
 	};
 	Return[expr //. ru];
 ];
