@@ -221,9 +221,9 @@ CreateXiRules[xi_] := (
 	OrderSet[PPN[xi, 0][T3a]  , 0];
 	OrderSet[PPN[xi, 1][LI[0]], 0];
 	OrderSet[PPN[xi, 1][T3a]  , 0];
-	OrderSet[PPN[xi, 2][T3a]  , 0];
-	OrderSet[PPN[xi, 3][LI[0]], 0];
-	OrderSet[PPN[xi, 4][T3a]  , 0];
+	OrderSet[PPN[xi, 2][LI[0]], 0];
+	OrderSet[PPN[xi, 3][T3a]  , 0];
+	OrderSet[PPN[xi, 4][LI[0]], 0];
 );
 
 CreateCoincRules[nd_, xi_] := Module[{expr, n},
