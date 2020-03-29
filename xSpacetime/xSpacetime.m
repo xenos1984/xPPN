@@ -254,26 +254,7 @@ CreateNonMetRules[nm_, nd_, met_] := Module[{expr},
 	MapThread[OrderSet, Transpose[expr], 1];
 ];
 
-CreateTauRules[tau_, bkm_] := (
-	(* Zeroth order is background metric. *)
-	OrderSet[PPN[tau, 0][-LI[0], -LI[0]], -1];
-	OrderSet[PPN[tau, 0][-LI[0], -T3a]  , 0];
-	OrderSet[PPN[tau, 0][-T3a, -LI[0]]  , 0];
-	OrderSet[PPN[tau, 0][-T3a, -T3b]    , bkm[-T3a, -T3b]];
-	(* Vanishing components *)
-	OrderSet[PPN[tau, 1][-LI[0], -LI[0]], 0];
-	OrderSet[PPN[tau, 1][-LI[0], -T3a]  , 0];
-	OrderSet[PPN[tau, 1][-T3a, -LI[0]]  , 0];
-	OrderSet[PPN[tau, 1][-T3a, -T3b]    , 0];
-	OrderSet[PPN[tau, 2][-LI[0], -T3a]  , 0];
-	OrderSet[PPN[tau, 2][-T3a, -LI[0]]  , 0];
-	OrderSet[PPN[tau, 3][-LI[0], -LI[0]], 0];
-	OrderSet[PPN[tau, 3][-T3a, -T3b]    , 0];
-	OrderSet[PPN[tau, 4][-LI[0], -T3a]  , 0];
-	OrderSet[PPN[tau, 4][-T3b, -LI[0]]  , 0];
-);
-
-CreateTetradTauRules[tet_, tau_, bkt_, bkm_] := Module[{n},
+CreateTetradRules[tet_, met_, asy_, bkt_, bki_, bkm_] := Module[{n, k},
 	(* Zeroth order is background tetrad. *)
 	OrderSet[PPN[tet, 0][LI[0], -LI[0]], 1];
 	OrderSet[PPN[tet, 0][LI[0], -T3a]  , 0];
@@ -282,10 +263,20 @@ CreateTetradTauRules[tet_, tau_, bkt_, bkm_] := Module[{n},
 
 	(* General formula for higher orders. *)
 	Do[
-		OrderSet[PPN[tet, n][LI[0], -LI[0]], -PPN[tau, n][-LI[0], -LI[0]] /. PPNRules[tau, {-Labels, -Labels}, n]];
-		OrderSet[PPN[tet, n][LI[0], -T3a]  , -PPN[tau, n][-LI[0], -T3a] /. PPNRules[tau, {-Labels, -TangentMfSpace}, n]];
-		OrderSet[PPN[tet, n][L3A, -LI[0]]  , bkt[L3A, -T3c] * bkm[T3c, T3d] * PPN[tau, n][-T3d, -LI[0]] /. PPNRules[tau, {-TangentMfSpace, -Labels}, n]];
-		OrderSet[PPN[tet, n][L3A, -T3a]    , bkt[L3A, -T3c] * bkm[T3c, T3d] * PPN[tau, n][-T3d, -T3a] /. PPNRules[tau, {-TangentMfSpace, -TangentMfSpace}, n]],
+		MapThread[OrderSet, {
+			{
+				PPN[tet, n][LI[0], -LI[0]],
+				PPN[tet, n][LI[0], -T3b],
+				PPN[tet, n][L3A, -LI[0]],
+				PPN[tet, n][L3A, -T3b]
+			},
+			Simplify[ToCanonical[#]]& /@ {
+				-((PPN[met, n][-LI[0], -LI[0]] /. PPNRules[met, {-Labels, -Labels}, n]) + Sum[(PPN[tet, k][LI[0], -LI[0]] /. PPNRules[tet, {Labels, -Labels}, k]) * (PPN[tet, n - k][LI[0], -LI[0]] /. PPNRules[tet, {Labels, -Labels}, n - k]) - bkm[-T3c, -T3d] * bki[-L3C, T3c] * bki[-L3D, T3d] * (PPN[tet, k][L3C, -LI[0]] /. PPNRules[tet, {LorentzMfSpace, -Labels}, k]) * (PPN[tet, n - k][L3D, -LI[0]] /. PPNRules[tet, {LorentzMfSpace, -Labels}, n - k]), {k, n - 1}]) / 2,
+				-((PPN[asy, n][-LI[0], -T3b] /. PPNRules[asy, {-Labels, -Tangent[MfSpace]}, n]) + (PPN[met, n][-LI[0], -T3b] /. PPNRules[met, {-Labels, -Tangent[MfSpace]}, n]) + Sum[(PPN[tet, k][LI[0], -LI[0]] /. PPNRules[tet, {Labels, -Labels}, k]) * (PPN[tet, n - k][LI[0], -T3b] /. PPNRules[tet, {Labels, -Tangent[MfSpace]}, n - k]) - bkm[-T3c, -T3d] * bki[-L3C, T3c] * bki[-L3D, T3d] * (PPN[tet, k][L3C, -LI[0]] /. PPNRules[tet, {LorentzMfSpace, -Labels}, k]) * (PPN[tet, n - k][L3D, -T3b] /. PPNRules[tet, {LorentzMfSpace, -Tangent[MfSpace]}, n - k]), {k, n - 1}]) / 2,
+				bkt[L3A, -T3e] * bkm[T3e, T3a] * (-(PPN[asy, n][-LI[0], -T3a] /. PPNRules[asy, {-Labels, -Tangent[MfSpace]}, n]) + (PPN[met, n][-LI[0], -T3a] /. PPNRules[met, {-Labels, -Tangent[MfSpace]}, n]) + Sum[(PPN[tet, k][LI[0], -T3a] /. PPNRules[tet, {Labels, -Tangent[MfSpace]}, k]) * (PPN[tet, n - k][LI[0], -LI[0]] /. PPNRules[tet, {Labels, -Labels}, n - k]) - bkm[-T3c, -T3d] * bki[-L3C, T3c] * bki[-L3D, T3d] * (PPN[tet, k][L3C, -T3a] /. PPNRules[tet, {LorentzMfSpace, -Tangent[MfSpace]}, k]) * (PPN[tet, n - k][L3D, -LI[0]] /. PPNRules[tet, {LorentzMfSpace, -Labels}, n - k]), {k, n - 1}]) / 2,
+				bkt[L3A, -T3e] * bkm[T3e, T3a] * ((PPN[asy, n][-T3a, -T3b] /. PPNRules[asy, {-Tangent[MfSpace], -Tangent[MfSpace]}, n]) + (PPN[met, n][-T3a, -T3b] /. PPNRules[met, {-Tangent[MfSpace], -Tangent[MfSpace]}, n]) + Sum[(PPN[tet, k][LI[0], -T3a] /. PPNRules[tet, {Labels, -Tangent[MfSpace]}, k]) * (PPN[tet, n - k][LI[0], -T3b] /. PPNRules[tet, {Labels, -Tangent[MfSpace]}, n - k]) - bkm[-T3c, -T3d] * bki[-L3C, T3c] * bki[-L3D, T3d] * (PPN[tet, k][L3C, -T3a] /. PPNRules[tet, {LorentzMfSpace, -Tangent[MfSpace]}, k]) * (PPN[tet, n - k][L3D, -T3b] /. PPNRules[tet, {LorentzMfSpace, -Tangent[MfSpace]}, n - k]), {k, n - 1}]) / 2
+			}
+		}, 1],
 	{n, $MaxPPNOrder}];
 ];
 
@@ -313,23 +304,6 @@ CreateInvTetradRules[itet_, tet_, bkt_] := Module[{n, m},
 			} /. PPNRules[tet] /. PPNRules[itet])
 		}, 1],
 	{n, $MaxPPNOrder}];
-];
-
-CreateMetricTauRules[met_, tau_, bkm_] := Module[{n, m},
-	Do[
-		MapThread[OrderSet, {
-			{
-				PPN[met, n][-LI[0], -LI[0]],
-				PPN[met, n][-LI[0], -T3a],
-				PPN[met, n][-T3a, -T3b]
-			},
-			Simplify[ToCanonical[#]]& /@ ({
-				Sum[bkm[T3c, T3d] * PPN[tau, n - m][-T3c, -LI[0]] * PPN[tau, m][-T3d, -LI[0]] - PPN[tau, n - m][-LI[0], -LI[0]] * PPN[tau, m][-LI[0], -LI[0]], {m, 0, n}],
-				Sum[bkm[T3c, T3d] * PPN[tau, n - m][-T3c, -LI[0]] * PPN[tau, m][-T3d, -T3a] - PPN[tau, n - m][-LI[0], -LI[0]] * PPN[tau, m][-LI[0], -T3a], {m, 0, n}],
-				Sum[bkm[T3c, T3d] * PPN[tau, n - m][-T3c, -T3a] * PPN[tau, m][-T3d, -T3b] - PPN[tau, n - m][-LI[0], -T3a] * PPN[tau, m][-LI[0], -T3b], {m, 0, n}]
-			} /. PPNRules[tau])
-		}, 1],
-	{n, 0, $MaxPPNOrder}];
 ];
 
 CreateWeitzRules[fd_, tet_, itet_] := Module[{expr},
@@ -380,24 +354,6 @@ CreateMetricRules[met_, bkg_] := (
 	OrderSet[PPN[met, 4][-LI[0], -T3a]  , 0];
 );
 
-CreateEnMomRules[em_, met_, dens_, pres_, int_, vel_, bkg_] := (
-	OrderSet[PPN[em, 0][-LI[0], -LI[0]], 0];
-	OrderSet[PPN[em, 0][-LI[0], -T3a]  , 0];
-	OrderSet[PPN[em, 0][-T3a, -T3b]    , 0];
-	OrderSet[PPN[em, 1][-LI[0], -LI[0]], 0];
-	OrderSet[PPN[em, 1][-LI[0], -T3a]  , 0];
-	OrderSet[PPN[em, 1][-T3a, -T3b]    , 0];
-	OrderSet[PPN[em, 2][-LI[0], -LI[0]], dens[]];
-	OrderSet[PPN[em, 2][-LI[0], -T3a]  , 0];
-	OrderSet[PPN[em, 2][-T3a, -T3b]    , 0];
-	OrderSet[PPN[em, 3][-LI[0], -LI[0]], 0];
-	OrderSet[PPN[em, 3][-LI[0], -T3a]  , -dens[] * vel[-T3a]];
-	OrderSet[PPN[em, 3][-T3a, -T3b]    , 0];
-	OrderSet[PPN[em, 4][-LI[0], -LI[0]], dens[] * (int[] + vel[T3a] * vel[-T3a] - PPN[met, 2][-LI[0], -LI[0]]) /. PPNRules[met, {-Labels, -Labels}, 2]];
-	OrderSet[PPN[em, 4][-LI[0], -T3a]  , 0];
-	OrderSet[PPN[em, 4][-T3a, -T3b]    , dens[] * vel[-T3a] * vel[-T3b] + pres[] * bkg[-T3a, -T3b]];
-);
-
 CreateInvMetricRules[met_, bkg_] := Module[{imet, n, m},
 	imet = Inv[met];
 
@@ -422,6 +378,34 @@ CreateInvMetricRules[met_, bkg_] := Module[{imet, n, m},
 		}, 1],
 	{n, $MaxPPNOrder}];
 ];
+
+CreateAsymRules[asy_] := (
+	OrderSet[PPN[asy, 0][-LI[0], -T3a], 0];
+	OrderSet[PPN[asy, 0][-T3a, -T3b]  , 0];
+	OrderSet[PPN[asy, 1][-LI[0], -T3a], 0];
+	OrderSet[PPN[asy, 1][-T3a, -T3b]  , 0];
+	OrderSet[PPN[asy, 2][-LI[0], -T3a], 0];
+	OrderSet[PPN[asy, 3][-T3a, -T3b]  , 0];
+	OrderSet[PPN[asy, 4][-LI[0], -T3a], 0];
+);
+
+CreateEnMomRules[em_, met_, dens_, pres_, int_, vel_, bkg_] := (
+	OrderSet[PPN[em, 0][-LI[0], -LI[0]], 0];
+	OrderSet[PPN[em, 0][-LI[0], -T3a]  , 0];
+	OrderSet[PPN[em, 0][-T3a, -T3b]    , 0];
+	OrderSet[PPN[em, 1][-LI[0], -LI[0]], 0];
+	OrderSet[PPN[em, 1][-LI[0], -T3a]  , 0];
+	OrderSet[PPN[em, 1][-T3a, -T3b]    , 0];
+	OrderSet[PPN[em, 2][-LI[0], -LI[0]], dens[]];
+	OrderSet[PPN[em, 2][-LI[0], -T3a]  , 0];
+	OrderSet[PPN[em, 2][-T3a, -T3b]    , 0];
+	OrderSet[PPN[em, 3][-LI[0], -LI[0]], 0];
+	OrderSet[PPN[em, 3][-LI[0], -T3a]  , -dens[] * vel[-T3a]];
+	OrderSet[PPN[em, 3][-T3a, -T3b]    , 0];
+	OrderSet[PPN[em, 4][-LI[0], -LI[0]], dens[] * (int[] + vel[T3a] * vel[-T3a] - PPN[met, 2][-LI[0], -LI[0]]) /. PPNRules[met, {-Labels, -Labels}, 2]];
+	OrderSet[PPN[em, 4][-LI[0], -T3a]  , 0];
+	OrderSet[PPN[em, 4][-T3a, -T3b]    , dens[] * vel[-T3a] * vel[-T3b] + pres[] * bkg[-T3a, -T3b]];
+);
 
 CreateLeviCivitaRules[cd_, met_] := Module[{expr},
 	expr = {#, ChristoffelToGradMetric[#]}&[Christoffel[cd][T4\[Rho], -T4\[Mu], -T4\[Nu]]];
