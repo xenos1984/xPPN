@@ -1,4 +1,4 @@
-BeginPackage["xAct`xPPN`xSpacetime`", {"xAct`xTensor`", "xAct`xPerm`", "xAct`xCore`"}]
+BeginPackage["xAct`xPPN`", {"xAct`xTensor`", "xAct`xPerm`", "xAct`xCore`"}]
 
 MfSpacetime::usage = "MfSpacetime is the spacetime manifold \!\(M\_4\).";
 MfSpace::usage = "MfSpace is the space manifold \!\(S\_3\).";
@@ -111,6 +111,16 @@ PotentialChiToPhiAB::usage = "PotentialChiToPhiAB[expr] applies the substitution
 PotentialUToPhiAB::usage = "PotentialUToPhiAB[expr] applies the substitution \!\(U\_\(,00\) \[RightArrow] -\(1\/2\)(\[ScriptCapitalA] + \[ScriptCapitalB] - \[CapitalPhi]\_1)\_\(,ii\)\).";
 
 MetricToStandard::usage = "";
+
+Met::usage = "";
+Tet::usage = "";
+InvTet::usage = "";
+Asym::usage = "";
+Xi::usage = "";
+NonMet::usage = ""
+CD::usage = "";
+ND::usage = "";
+FD::usage = "";
 
 Begin["xAct`xPPN`Private`"]
 
@@ -609,8 +619,23 @@ AutomaticRules[BkgInvTetradM4, MakeRule[{PD[-T4\[Nu]][BkgInvTetradM4[-L4\[Capita
 AutomaticRules[BkgTetradS3, MakeRule[{PD[-T3b][BkgTetradS3[L3A, -T3a]], 0}, MetricOn -> All, ContractMetrics -> True]];
 AutomaticRules[BkgInvTetradS3, MakeRule[{PD[-T3b][BkgInvTetradS3[-L3A, T3a]], 0}, MetricOn -> All, ContractMetrics -> True]];
 
+DefMetric[-1, Met[-T4\[Mu], -T4\[Nu]], CD, SymbolOfCovD -> {";", "\!\(\[EmptyDownTriangle]\&\[EmptyCircle]\)"},  PrintAs -> "g"];
+DefTensor[Tet[L4\[CapitalAlpha], -T4\[Mu]], {MfSpacetime}, PrintAs -> "\[Theta]"];
+DefTensor[InvTet[-L4\[CapitalAlpha], T4\[Mu]], {MfSpacetime}, PrintAs -> "e"];
+DefTensor[Asym[-T4\[Mu], -T4\[Nu]], {MfSpacetime}, Antisymmetric[{1, 2}], PrintAs -> "a"];
+DefCovD[FD[-T4\[Mu]], LorentzMfSpacetime, SymbolOfCovD -> {"|", "\!\(\[EmptyDownTriangle]\&\[FilledCircle]\)"}, FromMetric -> Met, Torsion -> True, Curvature -> False];
+DefTensor[Xi[T4\[Mu]], {MfSpacetime}, PrintAs -> "\[Xi]"];
+DefCovD[ND[-T4\[Mu]], SymbolOfCovD -> {"#", "\!\(\[EmptyDownTriangle]\&\[Times]\)"}, Torsion -> False, Curvature -> False];
+DefTensor[NonMet[-T4\[Rho], -T4\[Mu], -T4\[Nu]], {MfSpacetime}, Symmetric[{2, 3}], PrintAs -> "Q"];
+AutomaticRules[InvTet, MakeRule[{InvTet[-L4\[CapitalAlpha], T4\[Mu]] * Tet[L4\[CapitalAlpha], -T4\[Nu]], delta[-T4\[Nu], T4\[Mu]]}, MetricOn -> All, ContractMetrics -> True]];
+
+GiveSymbol[Christoffel, CD, ND];
+GiveSymbol[Christoffel, CD, FD];
+GiveSymbol[Christoffel, FD, ND];
+
 DefTensor[EnergyMomentum[-T4\[Mu], -T4\[Nu]], {MfSpacetime}, Symmetric[{1, 2}], PrintAs -> "\[CapitalTheta]"];
 DefTensor[TREnergyMomentum[-T4\[Mu], -T4\[Nu]], {MfSpacetime}, Symmetric[{1, 2}], PrintAs -> "\!\(\[CapitalTheta]\&_\)"];
+AutomaticRules[TREnergyMomentum, MakeRule[{TREnergyMomentum[-T4\[Mu], -T4\[Nu]], EnergyMomentum[-T4\[Mu], -T4\[Nu]] - EnergyMomentum[-T4\[Rho], -T4\[Sigma]] * GiveSymbol[Inv, Met][T4\[Rho], T4\[Sigma]] * Met[-T4\[Mu], -T4\[Nu]] / 2}, MetricOn -> All, ContractMetrics -> True]];
 
 DefTensor[Density[], {MfSpace, TimePar}, PrintAs -> "\[Rho]"];
 DefTensor[Pressure[], {MfSpace, TimePar}, PrintAs -> "p"];
@@ -714,6 +739,35 @@ StandardMetricRules[met_, bkg_] := Flatten[MakeRule[#, MetricOn -> All, Contract
 	{PPNTensor[met, {-Labels, -Tangent[MfSpace]}, 3][-LI[0], -T3a], -(4 * ParameterGamma + 3 + ParameterAlpha1 - ParameterAlpha2 + ParameterZeta1 - 2 * ParameterXi) * PotentialV[-T3a] / 2 - (1 + ParameterAlpha2 - ParameterZeta1 + 2 * ParameterXi) * PotentialW[-T3a] / 2},
 	{PPNTensor[met, {-Labels, -Labels}, 4][-LI[0], -LI[0]], -2 * ParameterBeta * PotentialU[]^2 - 2 * ParameterXi * PotentialPhiW[] + (2 * ParameterGamma + 2 + ParameterAlpha3 + ParameterZeta1 - 2 * ParameterXi) * PotentialPhi1[] + 2 * (3 * ParameterGamma - 2 * ParameterBeta + 1 + ParameterZeta2 + ParameterXi) * PotentialPhi2[] + 2 * (1 + ParameterZeta3) * PotentialPhi3[] + 2 * (3 * ParameterGamma + 3 * ParameterZeta4 - 2 ParameterXi) * PotentialPhi4[] - (ParameterZeta1 - 2 * ParameterXi) * PotentialA[]}
 }];
+
+CreateMetricRules[Met, BkgMetricS3];
+CreateInvMetricRules[Met, BkgMetricS3];
+
+CreateAsymRules[Asym];
+CreateTetradRules[Tet, Met, Asym, BkgTetradS3, BkgInvTetradS3, BkgMetricS3];
+CreateInvTetradRules[InvTet, Tet, BkgInvTetradS3];
+
+CreateLeviCivitaRules[CD, Met];
+CreateRiemannRules[CD];
+CreateRiemannDownRules[CD, Met];
+CreateRicciRules[CD, Met];
+CreateRicciScalarRules[CD, Met];
+CreateEinsteinRules[CD, Met];
+
+CreateWeitzRules[FD, Tet, InvTet];
+CreateTorsionRules[FD];
+CreateConnDiffRules[CD, FD];
+
+CreateXiRules[Xi];
+CreateCoincRules[ND, Xi];
+CreateConnDiffRules[CD, ND];
+CreateNonMetRules[NonMet, ND, Met];
+
+CreateConnDiffRules[FD, ND];
+
+CreateEnMomRules[EnergyMomentum, Met, Density, Pressure, InternalEnergy, Velocity, BkgMetricS3];
+
+MetricToStandard[expr_] := expr //. StandardMetricRules[Met, BkgMetricS3] //. PPNRules[Met];
 
 End[]
 
