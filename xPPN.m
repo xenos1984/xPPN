@@ -110,6 +110,10 @@ PotentialWToChiV::usage = "PotentialWToChiV[expr] applies the substitution \!\(W
 PotentialChiToPhiAB::usage = "PotentialChiToPhiAB[expr] applies the substitution \!\(\[Chi]\_\(,00\) \[RightArrow] \[ScriptCapitalA] + \[ScriptCapitalB] - \[CapitalPhi]\_1\).";
 PotentialUToPhiAB::usage = "PotentialUToPhiAB[expr] applies the substitution \!\(U\_\(,00\) \[RightArrow] -\(1\/2\)(\[ScriptCapitalA] + \[ScriptCapitalB] - \[CapitalPhi]\_1)\_\(,ii\)\).";
 
+TimeRhoToEuler::usage = "";
+TimeVelToEuler::usage = "";
+TimePiToEuler::usage = "";
+
 MetricToStandard::usage = "";
 
 Met::usage = "";
@@ -412,9 +416,12 @@ CreateEnMomRules[em_, met_, dens_, pres_, int_, vel_, bkg_] := (
 	OrderSet[PPN[em, 3][-LI[0], -LI[0]], 0];
 	OrderSet[PPN[em, 3][-LI[0], -T3a]  , -dens[] * vel[-T3a]];
 	OrderSet[PPN[em, 3][-T3a, -T3b]    , 0];
-	OrderSet[PPN[em, 4][-LI[0], -LI[0]], dens[] * (int[] + vel[T3a] * vel[-T3a] - PPN[met, 2][-LI[0], -LI[0]]) /. PPNRules[met, {-Labels, -Labels}, 2]];
+	OrderSet[PPN[em, 4][-LI[0], -LI[0]], dens[] * (int[] + vel[T3a] * vel[-T3a] - PPN[met, 2][-LI[0], -LI[0]])];
 	OrderSet[PPN[em, 4][-LI[0], -T3a]  , 0];
 	OrderSet[PPN[em, 4][-T3a, -T3b]    , dens[] * vel[-T3a] * vel[-T3b] + pres[] * bkg[-T3a, -T3b]];
+	OrderSet[PPN[em, 5][-LI[0], -LI[0]], 0];
+	OrderSet[PPN[em, 5][-LI[0], -T3a]  , -(dens[] * int[] + dens[] * vel[T3b] * vel[-T3b] + pres[]) * vel[-T3a] - dens[] * PPN[met, 3][-LI[0], -T3a] - dens[] * PPN[met, 2][-T3a, -T3b] * vel[T3b]];
+	OrderSet[PPN[em, 5][-T3a, -T3b]    , 0];
 );
 
 CreateLeviCivitaRules[cd_, met_] := Module[{expr},
@@ -739,6 +746,10 @@ StandardMetricRules[met_, bkg_] := Flatten[MakeRule[#, MetricOn -> All, Contract
 	{PPNTensor[met, {-Labels, -Tangent[MfSpace]}, 3][-LI[0], -T3a], -(4 * ParameterGamma + 3 + ParameterAlpha1 - ParameterAlpha2 + ParameterZeta1 - 2 * ParameterXi) * PotentialV[-T3a] / 2 - (1 + ParameterAlpha2 - ParameterZeta1 + 2 * ParameterXi) * PotentialW[-T3a] / 2},
 	{PPNTensor[met, {-Labels, -Labels}, 4][-LI[0], -LI[0]], -2 * ParameterBeta * PotentialU[]^2 - 2 * ParameterXi * PotentialPhiW[] + (2 * ParameterGamma + 2 + ParameterAlpha3 + ParameterZeta1 - 2 * ParameterXi) * PotentialPhi1[] + 2 * (3 * ParameterGamma - 2 * ParameterBeta + 1 + ParameterZeta2 + ParameterXi) * PotentialPhi2[] + 2 * (1 + ParameterZeta3) * PotentialPhi3[] + 2 * (3 * ParameterGamma + 3 * ParameterZeta4 - 2 ParameterXi) * PotentialPhi4[] - (ParameterZeta1 - 2 * ParameterXi) * PotentialA[]}
 }];
+
+TimeRhoToEuler[expr_] := SortPDsToTime[expr, Density] //. {ParamD[t___, TimePar][Density[]] :> Module[{T3a}, -ParamD[t][PD[-T3a][Density[] * Velocity[T3a]]]]};
+TimeVelToEuler[expr_] := SortPDsToTime[expr, Velocity] //. {ParamD[t___, TimePar][Velocity[a_]] :> Module[{T3b}, ParamD[t][PD[a][PPN[Met, 2][-LI[0], -LI[0]]] / 2 - PD[a][Pressure[]] / Density[] - Velocity[T3b] * PD[-T3b][Velocity[a]]]]};
+TimePiToEuler[expr_] := SortPDsToTime[expr, InternalEnergy] //. {ParamD[t___, TimePar][InternalEnergy[]] :> Module[{T3a, T3b}, ParamD[t][Velocity[T3a] * (PD[-T3a][Pressure[]] / Density[] - PD[-T3a][InternalEnergy[] + PPN[Met, 2][-LI[0], -LI[0]] / 2 + PPN[Met, 2][-T3b, T3b] / 2]) - Pressure[] * PD[-T3a][Velocity[T3a]] / Density[] - ParamD[TimePar][PPN[Met, 2][-T3a, T3a] / 2]]]};
 
 CreateMetricRules[Met, BkgMetricS3];
 CreateInvMetricRules[Met, BkgMetricS3];
