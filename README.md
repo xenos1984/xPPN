@@ -11,7 +11,7 @@ git clone https://github.com/xenos1984/xPPN.git
 ```
 3. Load the package in Mathematica:
 ```mathematica
-<< `xAct`xPPN`xMetric`
+<< `xAct`xPPN`
 ```
 
 ## Usage
