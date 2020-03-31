@@ -690,6 +690,8 @@ BkgInvTetradM4 /: PPNTensor[BkgInvTetradM4, {-LorentzMfSpace, Labels}] := Zero;
 BkgInvTetradM4 /: PPNTensor[BkgInvTetradM4, {-LorentzMfSpace, TangentMfSpace}] := BkgInvTetradS3;
 
 $PotentialToSourceRules = Flatten[MakeRule[#, MetricOn -> All, ContractMetrics -> True]& /@ {
+	{PD[-T3b][PD[T3b][PD[-T3a][PD[T3a][PotentialA[]]]]], 8 * Pi * PD[-T3a][PD[-T3b][Density[] * Velocity[T3a] * Velocity[T3b]]] - 4 * Pi * PD[-T3a][PD[T3a][Density[] * Velocity[-T3b] * Velocity[T3b]]]},
+	{PD[-T3b][PD[T3b][PD[-T3a][PD[T3a][PotentialB[]]]]], 8 * Pi * PD[-T3a][PD[T3a][Pressure[]] - Density[] * PD[T3a][PotentialU[]]]},
 	{PD[-T3b][PD[T3b][PD[-T3a][PD[T3a][PotentialChi[]]]]], 8 * Pi * Density[]},
 	{PD[-T3a][PD[T3a][PotentialU[]]], -4 * Pi * Density[]},
 	{PD[-T3b][PD[T3b][PotentialV[-T3a]]], -4 * Pi * Density[] * Velocity[-T3a]},
