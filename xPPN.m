@@ -483,6 +483,36 @@ CreateEinsteinRules[cd_, met_] := Module[{expr},
 	MapThread[OrderSet, Transpose[expr], 1];
 ];
 
+CreateTFRicciRules[cd_, met_] := Module[{expr},
+	expr = {TFRicci[cd][-T4\[Mu], -T4\[Nu]], Ricci[cd][-T4\[Mu], -T4\[Nu]] - RicciScalar[cd][] * met[-T4\[Mu], -T4\[Nu]] / 4};
+	expr = SpaceTimeSplits[#, {-T4\[Mu] -> -T3a, -T4\[Nu] -> -T3b}]& /@ expr;
+	expr = Union[Flatten[Transpose[expr, {3, 1, 2}], 1], SameTest -> (SameQ @@ (Head /@ First /@ {##})&)];
+	expr = Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]];
+	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
+	expr = Simplify[ToCanonical[expr]];
+	MapThread[OrderSet, Transpose[expr], 1];
+];
+
+CreateWeylRules[cd_, met_] := Module[{expr},
+	expr = {#, WeylToRiemann[#]}&[Weyl[cd][-T4\[Nu], -T4\[Mu], -T4\[Sigma], -T4\[Rho]]];
+	expr = SpaceTimeSplits[#, {-T4\[Rho] -> -T3c, -T4\[Sigma] -> -T3d, -T4\[Mu] -> -T3a, -T4\[Nu] -> -T3b}]& /@ expr;
+	expr = Map[Simplify[ToCanonical[#]]&, expr, {5}];
+	expr = Union[DeleteCases[DeleteCases[Flatten[Transpose[expr, {5, 1, 2, 3, 4}], 3], {0, _}], {-_, _}], SameTest -> (SameQ @@ (Head /@ First /@ {##})&)];
+	expr = Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]];
+	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
+	expr = Simplify[ToCanonical[expr]];
+	MapThread[OrderSet, Transpose[expr], 1];
+];
+
+CreateKretschmannRules[cd_, met_] := Module[{expr},
+	expr = {Kretschmann[cd][], RiemannDown[cd][-T4\[Alpha], -T4\[Beta], -T4\[Gamma], -T4\[Delta]] * RiemannDown[cd][-T4\[Mu], -T4\[Nu], -T4\[Rho], -T4\[Sigma]] * Inv[met][T4\[Alpha], T4\[Mu]] * Inv[met][T4\[Beta], T4\[Nu]] * Inv[met][T4\[Gamma], T4\[Rho]] * Inv[met][T4\[Delta], T4\[Sigma]]};
+	expr = SpaceTimeSplits[#, {}]& /@ expr;
+	expr = Transpose[Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]]];
+	expr = Simplify[ToCanonical[expr]];
+	Print[expr];
+	MapThread[OrderSet, Transpose[expr], 1];
+];
+
 SpaceTimeSplit[expr_, reps_] := Module[{fi, res, h, i, x},
 	fi = List @@ IndicesOf[Free, Select[$SumVBundles, BaseOfVBundle[#] === MfSpacetime&]][expr];
 	If[Not[Sort[fi] === Sort[First /@ reps]], Throw[Message[SpaceTimeSplit::error, "Replacement list must contain replacements for all free spacetime indices."]]];
@@ -766,6 +796,9 @@ CreateRiemannDownRules[CD, Met];
 CreateRicciRules[CD, Met];
 CreateRicciScalarRules[CD, Met];
 CreateEinsteinRules[CD, Met];
+CreateTFRicciRules[CD, Met];
+CreateWeylRules[CD, Met];
+CreateKretschmannRules[CD, Met];
 
 CreateWeitzRules[FD, Tet, InvTet];
 CreateTorsionRules[FD];
