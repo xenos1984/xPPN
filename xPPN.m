@@ -727,7 +727,7 @@ With[{rule = Symbol[StringJoin["$", ToString[#], "Rules"]]}, #[expr_] := expr //
 	PotentialWToChiV
 };
 
-PotentialToSource[expr_] := Fold[SortPDsToBox, expr, {PotentialChi, PotentialU, PotentialV, PotentialPhiW, PotentialPhi1, PotentialPhi2, PotentialPhi3, PotentialPhi4}] //. $PotentialToSourceRules;
+PotentialToSource[expr_] := Fold[SortPDsToBox, expr, {PotentialA, PotentialB, PotentialChi, PotentialU, PotentialV, PotentialPhiW, PotentialPhi1, PotentialPhi2, PotentialPhi3, PotentialPhi4}] //. $PotentialToSourceRules;
 
 PotentialChiToU[expr_] := SortPDsToBox[expr, PotentialChi] //. $PotentialChiToURules;
 
