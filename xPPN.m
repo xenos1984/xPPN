@@ -430,7 +430,7 @@ CreateLeviCivitaRules[cd_, met_] := Module[{expr},
 	expr = Union[Flatten[Transpose[expr, {4, 1, 2, 3}], 2], SameTest -> (SameQ @@ (Head /@ First /@ {##})&)];
 	expr = Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]];
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
-	expr = Simplify[ToCanonical[expr]];
+	expr = Map[Simplify[ToCanonical[ContractMetric[#, OverDerivatives -> True, AllowUpperDerivatives -> True]]]&, expr, {2}];
 	MapThread[OrderSet, Transpose[expr], 1];
 ];
 
@@ -441,7 +441,7 @@ CreateRiemannRules[cd_] := Module[{expr},
 	expr = Union[DeleteCases[DeleteCases[Flatten[Transpose[expr, {5, 1, 2, 3, 4}], 3], {0, _}], {-_, _}], SameTest -> (SameQ @@ (Head /@ First /@ {##})&)];
 	expr = Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]];
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
-	expr = Simplify[ToCanonical[expr]];
+	expr = Map[Simplify[ToCanonical[ContractMetric[#, OverDerivatives -> True, AllowUpperDerivatives -> True]]]&, expr, {2}];
 	MapThread[OrderSet, Transpose[expr], 1];
 ];
 
@@ -452,7 +452,7 @@ CreateRiemannDownRules[cd_, met_] := Module[{expr},
 	expr = Union[DeleteCases[DeleteCases[Flatten[Transpose[expr, {5, 1, 2, 3, 4}], 3], {0, _}], {-_, _}], SameTest -> (SameQ @@ (Head /@ First /@ {##})&)];
 	expr = Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]];
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
-	expr = Simplify[ToCanonical[expr]];
+	expr = Map[Simplify[ToCanonical[ContractMetric[#, OverDerivatives -> True, AllowUpperDerivatives -> True]]]&, expr, {2}];
 	MapThread[OrderSet, Transpose[expr], 1];
 ];
 
@@ -462,14 +462,14 @@ CreateRicciRules[cd_, met_] := Module[{expr},
 	expr = Union[Flatten[Transpose[expr, {3, 1, 2}], 1], SameTest -> (SameQ @@ (Head /@ First /@ {##})&)];
 	expr = Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]];
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
-	expr = Simplify[ToCanonical[expr]];
+	expr = Map[Simplify[ToCanonical[ContractMetric[#, OverDerivatives -> True, AllowUpperDerivatives -> True]]]&, expr, {2}];
 	MapThread[OrderSet, Transpose[expr], 1];
 ];
 
 CreateRicciScalarRules[cd_, met_] := Module[{expr},
 	expr = {SpaceTimeSplits[RicciScalar[cd][], {}], Tr[SpaceTimeSplits[Ricci[cd][-T4\[Mu], -T4\[Nu]], {-T4\[Mu] -> -T3a, -T4\[Nu] -> -T3b}] . Transpose[SpaceTimeSplits[Inv[met][T4\[Mu], T4\[Nu]], {T4\[Mu] -> T3a, T4\[Nu] -> T3b}]]]};
 	expr = Transpose[Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]]];
-	expr = Simplify[ToCanonical[expr]];
+	expr = Map[Simplify[ToCanonical[ContractMetric[#, OverDerivatives -> True, AllowUpperDerivatives -> True]]]&, expr, {2}];
 	MapThread[OrderSet, Transpose[expr], 1];
 ];
 
@@ -479,7 +479,7 @@ CreateEinsteinRules[cd_, met_] := Module[{expr},
 	expr = Union[Flatten[Transpose[expr, {3, 1, 2}], 1], SameTest -> (SameQ @@ (Head /@ First /@ {##})&)];
 	expr = Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]];
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
-	expr = Simplify[ToCanonical[expr]];
+	expr = Map[Simplify[ToCanonical[ContractMetric[#, OverDerivatives -> True, AllowUpperDerivatives -> True]]]&, expr, {2}];
 	MapThread[OrderSet, Transpose[expr], 1];
 ];
 
@@ -489,7 +489,7 @@ CreateTFRicciRules[cd_, met_] := Module[{expr},
 	expr = Union[Flatten[Transpose[expr, {3, 1, 2}], 1], SameTest -> (SameQ @@ (Head /@ First /@ {##})&)];
 	expr = Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]];
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
-	expr = Simplify[ToCanonical[expr]];
+	expr = Map[Simplify[ToCanonical[ContractMetric[#, OverDerivatives -> True, AllowUpperDerivatives -> True]]]&, expr, {2}];
 	MapThread[OrderSet, Transpose[expr], 1];
 ];
 
@@ -500,7 +500,7 @@ CreateWeylRules[cd_, met_] := Module[{expr},
 	expr = Union[DeleteCases[DeleteCases[Flatten[Transpose[expr, {5, 1, 2, 3, 4}], 3], {0, _}], {-_, _}], SameTest -> (SameQ @@ (Head /@ First /@ {##})&)];
 	expr = Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]];
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
-	expr = Simplify[ToCanonical[expr]];
+	expr = Map[Simplify[ToCanonical[ContractMetric[#, OverDerivatives -> True, AllowUpperDerivatives -> True]]]&, expr, {2}];
 	MapThread[OrderSet, Transpose[expr], 1];
 ];
 
@@ -508,7 +508,7 @@ CreateKretschmannRules[cd_, met_] := Module[{expr},
 	expr = {Kretschmann[cd][], RiemannDown[cd][-T4\[Alpha], -T4\[Beta], -T4\[Gamma], -T4\[Delta]] * RiemannDown[cd][-T4\[Mu], -T4\[Nu], -T4\[Rho], -T4\[Sigma]] * Inv[met][T4\[Alpha], T4\[Mu]] * Inv[met][T4\[Beta], T4\[Nu]] * Inv[met][T4\[Gamma], T4\[Rho]] * Inv[met][T4\[Delta], T4\[Sigma]]};
 	expr = SpaceTimeSplits[#, {}]& /@ expr;
 	expr = Transpose[Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]]];
-	expr = Simplify[ToCanonical[expr]];
+	expr = Map[Simplify[ToCanonical[ContractMetric[#, OverDerivatives -> True, AllowUpperDerivatives -> True]]]&, expr, {2}];
 	MapThread[OrderSet, Transpose[expr], 1];
 ];
 
