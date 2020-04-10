@@ -41,7 +41,7 @@ BkgInvTetradS3::usage = "BkgTetradS3[-A, i] is the inverse background tetrad \!\
 BkgInvTetradT1::usage = "BkgTetradT1[-\[ScriptCapitalT], \[ScriptT]] is the inverse background tetrad \!\(\(\[CapitalDelta]\_0\)\^0 = 1\) on the time manifold \!\(T\_1\).";
 
 EnergyMomentum::usage = "EnergyMomentum[-\[Mu], -\[Nu]] is the energy-momentum tensor \!\(\[CapitalTheta]\_\(\[Mu]\[Nu]\)\).";
-TREnergyMomentum::usage = "TrEnergyMomentum[-\[Mu], -\[Nu]] is the trace-reversed energy-momentum tensor \!\(\(\[CapitalTheta]\&_\)\_\(\[Mu]\[Nu]\)\).";
+TREnergyMomentum::usage = "TREnergyMomentum[-\[Mu], -\[Nu]] is the trace-reversed energy-momentum tensor \!\(\(\[CapitalTheta]\&_\)\_\(\[Mu]\[Nu]\)\).";
 
 Density::usage = "Density[] is the rest energy density \[Rho].";
 Pressure::usage = "Pressure[] is the pressure p.";
@@ -252,7 +252,7 @@ CreateCoincRules[nd_, xi_] := Module[{expr, n},
 		expr = SpaceTimeSplits[#, {T4\[Rho] -> T3c, -T4\[Mu] -> -T3a, -T4\[Nu] -> -T3b}]& /@ expr;
 		expr = Union[Flatten[Transpose[expr, {4, 1, 2, 3}], 2], SameTest -> (SameQ @@ (Head /@ First /@ {##})&)];
 		expr = Map[VelocityOrder[#, n]&, expr, {2}];
-		expr = Simplify[ToCanonical[expr /. PPNRules[xi] /. PPNRules[GiveSymbol[Christoffel, nd]]]];
+		expr = Simplify[ToCanonical[expr]];
 		MapThread[OrderSet, Transpose[expr], 1],
 	{n, $MaxPPNOrder}];
 ];
@@ -264,7 +264,7 @@ CreateNonMetRules[nm_, nd_, met_] := Module[{expr},
 	expr = Union[Flatten[Transpose[expr, {4, 1, 2, 3}], 2], SameTest -> (SameQ @@ (Head /@ First /@ {##})&)];
 	expr = Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]];
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
-	expr = Simplify[ToCanonical[expr /. PPNRules[met] /. PPNRules[GiveSymbol[Christoffel, nd]]]];
+	expr = Simplify[ToCanonical[expr]];
 	MapThread[OrderSet, Transpose[expr], 1];
 ];
 
@@ -327,7 +327,7 @@ CreateWeitzRules[fd_, tet_, itet_] := Module[{expr},
 	expr = Union[Flatten[Transpose[expr, {4, 1, 2, 3}], 2], SameTest -> (SameQ @@ (Head /@ First /@ {##})&)];
 	expr = Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]];
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
-	expr = Simplify[ToCanonical[expr /. PPNRules[itet] /. PPNRules[tet]]];
+	expr = Simplify[ToCanonical[expr]];
 	MapThread[OrderSet, Transpose[expr], 1];
 ];
 
@@ -338,7 +338,7 @@ CreateTorsionRules[fd_] := Module[{expr},
 	expr = Union[DeleteCases[DeleteCases[Flatten[Transpose[expr, {4, 1, 2, 3}], 2], {0, _}], {-_, _}], SameTest -> (SameQ @@ (Head /@ First /@ {##})&)];
 	expr = Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]];
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
-	expr = Simplify[ToCanonical[expr /. PPNRules[GiveSymbol[Christoffel, fd]]]];
+	expr = Simplify[ToCanonical[expr]];
 	MapThread[OrderSet, Transpose[expr], 1];
 ];
 
@@ -349,7 +349,7 @@ CreateConnDiffRules[cd_, xd_] := Module[{expr},
 	expr = Union[DeleteCases[DeleteCases[Flatten[Transpose[expr, {4, 1, 2, 3}], 2], {0, _}], {-_, _}], SameTest -> (SameQ @@ (Head /@ First /@ {##})&)];
 	expr = Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]];
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
-	expr = Simplify[ToCanonical[expr /. PPNRules[GiveSymbol[Christoffel, cd]] /. PPNRules[GiveSymbol[Christoffel, xd]]]];
+	expr = Simplify[ToCanonical[expr]];
 	MapThread[OrderSet, Transpose[expr], 1];
 ];
 
@@ -430,7 +430,7 @@ CreateLeviCivitaRules[cd_, met_] := Module[{expr},
 	expr = Union[Flatten[Transpose[expr, {4, 1, 2, 3}], 2], SameTest -> (SameQ @@ (Head /@ First /@ {##})&)];
 	expr = Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]];
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
-	expr = Simplify[ToCanonical[expr /. PPNRules[Inv[met]] /. PPNRules[met]]];
+	expr = Simplify[ToCanonical[expr]];
 	MapThread[OrderSet, Transpose[expr], 1];
 ];
 
@@ -441,7 +441,7 @@ CreateRiemannRules[cd_] := Module[{expr},
 	expr = Union[DeleteCases[DeleteCases[Flatten[Transpose[expr, {5, 1, 2, 3, 4}], 3], {0, _}], {-_, _}], SameTest -> (SameQ @@ (Head /@ First /@ {##})&)];
 	expr = Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]];
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
-	expr = Simplify[ToCanonical[expr /. PPNRules[GiveSymbol[Christoffel, cd]]]];
+	expr = Simplify[ToCanonical[expr]];
 	MapThread[OrderSet, Transpose[expr], 1];
 ];
 
@@ -452,7 +452,7 @@ CreateRiemannDownRules[cd_, met_] := Module[{expr},
 	expr = Union[DeleteCases[DeleteCases[Flatten[Transpose[expr, {5, 1, 2, 3, 4}], 3], {0, _}], {-_, _}], SameTest -> (SameQ @@ (Head /@ First /@ {##})&)];
 	expr = Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]];
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
-	expr = Simplify[ToCanonical[expr /. PPNRules[GiveSymbol[Christoffel, cd]] /. PPNRules[met]]];
+	expr = Simplify[ToCanonical[expr]];
 	MapThread[OrderSet, Transpose[expr], 1];
 ];
 
@@ -462,14 +462,14 @@ CreateRicciRules[cd_, met_] := Module[{expr},
 	expr = Union[Flatten[Transpose[expr, {3, 1, 2}], 1], SameTest -> (SameQ @@ (Head /@ First /@ {##})&)];
 	expr = Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]];
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
-	expr = Simplify[ToCanonical[expr /. PPNRules[GiveSymbol[RiemannDown, cd]] /. PPNRules[Inv[met]]]];
+	expr = Simplify[ToCanonical[expr]];
 	MapThread[OrderSet, Transpose[expr], 1];
 ];
 
 CreateRicciScalarRules[cd_, met_] := Module[{expr},
 	expr = {SpaceTimeSplits[RicciScalar[cd][], {}], Tr[SpaceTimeSplits[Ricci[cd][-T4\[Mu], -T4\[Nu]], {-T4\[Mu] -> -T3a, -T4\[Nu] -> -T3b}] . Transpose[SpaceTimeSplits[Inv[met][T4\[Mu], T4\[Nu]], {T4\[Mu] -> T3a, T4\[Nu] -> T3b}]]]};
 	expr = Transpose[Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]]];
-	expr = Simplify[ToCanonical[expr /. PPNRules[GiveSymbol[Ricci, cd]] /. PPNRules[Inv[met]]]];
+	expr = Simplify[ToCanonical[expr]];
 	MapThread[OrderSet, Transpose[expr], 1];
 ];
 
@@ -479,7 +479,7 @@ CreateEinsteinRules[cd_, met_] := Module[{expr},
 	expr = Union[Flatten[Transpose[expr, {3, 1, 2}], 1], SameTest -> (SameQ @@ (Head /@ First /@ {##})&)];
 	expr = Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]];
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
-	expr = Simplify[ToCanonical[expr /. PPNRules[GiveSymbol[Ricci, cd]] /. PPNRules[GiveSymbol[RicciScalar, cd]] /. PPNRules[met]]];
+	expr = Simplify[ToCanonical[expr]];
 	MapThread[OrderSet, Transpose[expr], 1];
 ];
 
@@ -509,7 +509,6 @@ CreateKretschmannRules[cd_, met_] := Module[{expr},
 	expr = SpaceTimeSplits[#, {}]& /@ expr;
 	expr = Transpose[Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]]];
 	expr = Simplify[ToCanonical[expr]];
-	Print[expr];
 	MapThread[OrderSet, Transpose[expr], 1];
 ];
 
