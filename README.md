@@ -14,6 +14,11 @@ git clone https://github.com/xenos1984/xPPN.git
 << `xAct`xPPN`
 ```
 
+## Running the examples
+
+1. Open any file from the `Examples` folder (with extension `wl`) in Mathematica.
+2. Choose "Run All Code" to execute the contents.
+
 ## Usage
 
 ## Further information
