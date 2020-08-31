@@ -150,7 +150,7 @@ meteqvru = Flatten[mkrg /@ %];
 
 
 (* ::Text:: *)
-(*The zeroth order equations correspond to the vacuum. Check that they are solved for the assumed Background.*)
+(*The zeroth order equations correspond to the vacuum. Check that they are solved for the assumed background.*)
 
 
 eqns0 = {PPN[MetEq,0][-LI[0],-LI[0]], PPN[MetEq,0][-T3a,-T3b]} /. meteqvru
