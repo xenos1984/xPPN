@@ -25,9 +25,9 @@ git clone https://github.com/xenos1984/xPPN.git
 
 ### The parametrized post-Newtonian formalism
 
-* Clifford M. Will, [Theory and experiment in gravitational physics](http://inspirehep.net/record/357130) (Cambridge University Press, 1993).
-* Clifford M. Will, [The Confrontation between General Relativity and Experiment](http://inspirehep.net/record/1287712), [**Living Rev. Rel. 17, 4**](http://doi.org/10.12942/lrr-2014-4) (2014), [arXiv:1403.7377 [gr-qc]](http://arxiv.org/abs/arXiv:1403.7377).
-* Clifford M. Will, [Theory and Experiment in Gravitational Physics](http://inspirehep.net/record/1700339) (Cambridge University Press, 2018).
+* Clifford M. Will, [Theory and experiment in gravitational physics](http://old.inspirehep.net/record/357130) (Cambridge University Press, 1993).
+* Clifford M. Will, [The Confrontation between General Relativity and Experiment](http://old.inspirehep.net/record/1287712), [**Living Rev. Rel. 17, 4**](http://doi.org/10.12942/lrr-2014-4) (2014), [arXiv:1403.7377 [gr-qc]](http://arxiv.org/abs/arXiv:1403.7377).
+* Clifford M. Will, [Theory and Experiment in Gravitational Physics](http://old.inspirehep.net/record/1700339) (Cambridge University Press, 2018).
 
 ### xAct
 
