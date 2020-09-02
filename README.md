@@ -19,7 +19,9 @@ git clone https://github.com/xenos1984/xPPN.git
 1. Open any file from the `Examples` folder (with extension `wl`) in Mathematica.
 2. Choose "Run All Code" to execute the contents.
 
-## Usage
+## Documentation
+
+* [Presentation at Space Science @ Drop Tower Seminar - 2. September 2020](http://kodu.ut.ee/~manuel/talks/ppn/2020_09_02_bremen.pdf)
 
 ## Further information
 
