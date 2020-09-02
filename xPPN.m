@@ -166,7 +166,7 @@ DefTensorBeginning[head_[inds___], deps_, sym_, opts___] := Null;
 
 DefTensorEnd[head_[inds___], deps_, sym_, opts___] := Module[{ntot, nst, pst, pin, sgs, gst, gin, grp, tup, dec, decs, rep, ss, rem, ind, i0, i1, slots, sltf, p, prm, n, vb},
 	(* Do we have any indices to split here? *)
-	If[Not[MemberQ[deps, MfSpacetime]], Return[]];
+	If[Not[Or[deps === MfSpacetime, And[Head[deps] === List, MemberQ[deps, MfSpacetime]]]], Return[]];
 
 	(* How many indices should we split and which? *)
 	ntot = Length[SlotsOfTensor[head]];
