@@ -239,7 +239,7 @@ CreateXiRules[xi_] := (
 	OrderSet[PPN[xi, 3][T3a]  , 0];
 	OrderSet[PPN[xi, 4][LI[0]], 0];
 );
-
+(*
 CreateCoincRules[nd_, xi_] := Module[{expr, n},
 	expr = Christoffel[nd][T4\[Rho], -T4\[Mu], -T4\[Nu]];
 	expr = SpaceTimeSplits[expr, {T4\[Rho] -> T3c, -T4\[Mu] -> -T3a, -T4\[Nu] -> -T3b}];
@@ -255,6 +255,20 @@ CreateCoincRules[nd_, xi_] := Module[{expr, n},
 		expr = Simplify[ToCanonical[expr]];
 		MapThread[OrderSet, Transpose[expr], 1],
 	{n, $MaxPPNOrder}];
+];
+*)
+CreateCoincRules[nd_, xi_] := Module[{expr, n},
+	expr = PD[-T4\[Mu]][PD[-T4\[Nu]][xi[T4\[Rho]]]];
+	expr = expr + LieD[xi[T4\[Sigma]]][expr] / 2;
+	expr = LieDToCovD[expr, PD];
+	expr = {Christoffel[nd][T4\[Rho], -T4\[Mu], -T4\[Nu]], expr};
+	expr = SpaceTimeSplits[#, {T4\[Rho] -> T3c, -T4\[Mu] -> -T3a, -T4\[Nu] -> -T3b}]& /@ expr;
+	expr = Map[Simplify[ToCanonical[#]]&, expr, {4}];
+	expr = Union[Flatten[Transpose[expr, {4, 1, 2, 3}], 2], SameTest -> (SameQ @@ (Head /@ First /@ {##})&)];
+	expr = Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]];
+	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
+	expr = Simplify[ToCanonical[expr]];
+	MapThread[OrderSet, Transpose[expr], 1];
 ];
 
 CreateNonMetRules[nm_, nd_, met_] := Module[{expr},
