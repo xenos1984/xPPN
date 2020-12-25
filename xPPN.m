@@ -82,8 +82,8 @@ PPN::usage = "PPN[head][indices] yields the 3+1 split of a tensor with given hea
 UsePPNRules::usage = "UsePPNRules is an option to VelocityOrder which specifies whether PPN rules for tensors at particular velocity orders should be applied or not. Possible values are True and False, with True being the default.";
 
 OrderSet::usage = "OrderSet[expr, value] defines a subsitution rule for an expression expr of the form PPN[head, order][indices], where value must be have the same index structure, to be used by ApplyPPNRules.";
-OrderUnset::usage = "OrderSet[expr] removes a substitution rule for expr previously defined by OrderSet.";
-(*OrderClear::usage = "";*)
+OrderUnset::usage = "OrderSet[expr] removes a post-Newtonian substitution rule for expr previously defined by OrderSet.";
+OrderClear::usage = "OrderClear[head] removes all post-Newtonian substitution rules defined for the tensor with the given head.";
 
 SortPDs::usage = "SortPDs[expr] sorts derivatives appearing in expr such that they appear in canonical order: spatial derivatives are applied before time derivatives and are sorted lexicographically.";
 SortPDsToBox::usage = "SortPDsToBox[expr] sorts derivatives appearing in expr such that pairs of spatial derivatives which combine to d'Alembert or Laplace operators are grouped and applied first.";
@@ -228,7 +228,7 @@ OrderSet[lhs : PPNTensor[head_, slots_List, o_] ? xTensorQ[inds___], rhs_] := Ta
 
 OrderUnset[PPNTensor[head_, slots_List, o_] ? xTensorQ[inds___]] := TagUnset[head, PPNRules[head, slots, o]];
 
-(*OrderClear[head] :=*)
+OrderClear[head_] := Set[UpValues[head], Select[UpValues[head], FreeQ[#, PPNRules]&]];
 
 CreateXiRules[xi_] := (
 	OrderSet[PPN[xi, 0][LI[0]], 0];
