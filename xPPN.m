@@ -36,9 +36,9 @@ BkgTetradM4::usage = "BkgTetradM4[\[CapitalGamma], -\[Mu]] is the background tet
 BkgTetradS3::usage = "BkgTetradS3[A, -i] is the background tetrad \!\(\(\[CapitalDelta]\^A\)\_i\) on the space manifold \!\(S\_3\).";
 BkgTetradT1::usage = "BkgTetradT1[\[ScriptCapitalT], -\[ScriptT]] is the background tetrad \!\(\(\[CapitalDelta]\^0\)\_0 = 1\) on the time manifold \!\(T\_1\).";
 
-BkgInvTetradM4::usage = "BkgTetradM4[-\[CapitalGamma], \[Mu]] is the inverse background tetrad \!\(\(\[CapitalDelta]\_\[CapitalGamma]\)\^\[Mu]\) on the spacetime manifold \!\(M\_4\).";
-BkgInvTetradS3::usage = "BkgTetradS3[-A, i] is the inverse background tetrad \!\(\(\[CapitalDelta]\_A\)\^i\) on the space manifold \!\(S\_3\).";
-BkgInvTetradT1::usage = "BkgTetradT1[-\[ScriptCapitalT], \[ScriptT]] is the inverse background tetrad \!\(\(\[CapitalDelta]\_0\)\^0 = 1\) on the time manifold \!\(T\_1\).";
+BkgInvTetradM4::usage = "BkgInvTetradM4[-\[CapitalGamma], \[Mu]] is the inverse background tetrad \!\(\(\[CapitalDelta]\_\[CapitalGamma]\)\^\[Mu]\) on the spacetime manifold \!\(M\_4\).";
+BkgInvTetradS3::usage = "BkgInvTetradS3[-A, i] is the inverse background tetrad \!\(\(\[CapitalDelta]\_A\)\^i\) on the space manifold \!\(S\_3\).";
+BkgInvTetradT1::usage = "BkgInvTetradT1[-\[ScriptCapitalT], \[ScriptT]] is the inverse background tetrad \!\(\(\[CapitalDelta]\_0\)\^0 = 1\) on the time manifold \!\(T\_1\).";
 
 EnergyMomentum::usage = "EnergyMomentum[-\[Mu], -\[Nu]] is the energy-momentum tensor \!\(\[CapitalTheta]\_\(\[Mu]\[Nu]\)\).";
 TREnergyMomentum::usage = "TREnergyMomentum[-\[Mu], -\[Nu]] is the trace-reversed energy-momentum tensor \!\(\(\[CapitalTheta]\&_\)\_\(\[Mu]\[Nu]\)\).";
@@ -72,18 +72,18 @@ ParameterZeta3::usage = "ParameterZeta3 is the post-Newtonian parameter \!\(\[Ze
 ParameterZeta4::usage = "ParameterZeta4 is the post-Newtonian parameter \!\(\[Zeta]\_4\).";
 ParameterXi::usage = "ParameterXi is the post-Newtonian parameter \[Xi].";
 
-SpaceTimeSplit::usage = "";
-SpaceTimeSplits::usage = "";
+SpaceTimeSplit::usage = "SpaceTimeSplit[expr, rules] splits the tensorial expression expr into time and space components, by expanding all dummy spacetime indices into sums of time and space indices and replacing all free spacetime indices with either time or space indices following the given rules.";
+SpaceTimeSplits::usage = "SpaceTimeSplits[expr, rules] splits the tensorial expression expr into an array of time and space components using SpaceTimeSplit, where the free indices are converted to time indices or space indices following the given rules.";
 
-VelocityOrder::usage = "";
-ApplyPPNRules::usage = "";
-PPN::usage = "PPN[head][indices] yields the 3+1 split of a tensor with given head and indices. PPN[head, order][indices] yields a single term in the perturbative expansion of the aforementioned tensor.";
+VelocityOrder::usage = "VelocityOrder[expr, order] extracts the term of the given velocity order from expr.";
+ApplyPPNRules::usage = "ApplyPPNRules[expr, head] applies any rules defined for the post-Newtonian expansion of the tensor with the given head to expr.\nApplyPPNRules[expr] applies the PPN rules for any tensors which appear in expr.";
+PPN::usage = "PPN[head][indices] yields the 3+1 split of a tensor with given head and indices.\nPPN[head, order][indices] yields a single term in the perturbative expansion of the aforementioned tensor.";
 
-UsePPNRules::usage = "UsePPNRules is an option to VelocityOrder which specifies whether PPN rules for tensors at particular velocity orders should be applied or not. Possible values are True and False.";
+UsePPNRules::usage = "UsePPNRules is an option to VelocityOrder which specifies whether PPN rules for tensors at particular velocity orders should be applied or not. Possible values are True and False, with True being the default.";
 
-OrderSet::usage = "";
-OrderUnset::usage = "";
-OrderClear::usage = "";
+OrderSet::usage = "OrderSet[expr, value] defines a subsitution rule for an expression expr of the form PPN[head, order][indices], where value must be have the same index structure, to be used by ApplyPPNRules.";
+OrderUnset::usage = "OrderSet[expr] removes a substitution rule for expr previously defined by OrderSet.";
+(*OrderClear::usage = "";*)
 
 SortPDs::usage = "SortPDs[expr] sorts derivatives appearing in expr such that they appear in canonical order: spatial derivatives are applied before time derivatives and are sorted lexicographically.";
 SortPDsToBox::usage = "SortPDsToBox[expr] sorts derivatives appearing in expr such that pairs of spatial derivatives which combine to d'Alembert or Laplace operators are grouped and applied first.";
@@ -110,21 +110,21 @@ PotentialWToChiV::usage = "PotentialWToChiV[expr] applies the substitution \!\(W
 PotentialChiToPhiAB::usage = "PotentialChiToPhiAB[expr] applies the substitution \!\(\[Chi]\_\(,00\) \[RightArrow] \[ScriptCapitalA] + \[ScriptCapitalB] - \[CapitalPhi]\_1\).";
 PotentialUToPhiAB::usage = "PotentialUToPhiAB[expr] applies the substitution \!\(U\_\(,00\) \[RightArrow] -\(1\/2\)(\[ScriptCapitalA] + \[ScriptCapitalB] - \[CapitalPhi]\_1)\_\(,ii\)\).";
 
-TimeRhoToEuler::usage = "";
-TimeVelToEuler::usage = "";
-TimePiToEuler::usage = "";
+TimeRhoToEuler::usage = "TimeRhoToEuler[expr] applies the substitution \!\(\[Rho]\_\(,0\) \[RightArrow] -(\[Rho] v\_i)\_i\).";
+TimeVelToEuler::usage = "TimeVelToEuler[expr] applies the substitution \!\(v\_\(i,0\) \[RightArrow] \(1\/2\) g\&2\_\(00,i\) - v\_\(i,j\)v\_j - \(p\_\(,i\)\/\[Rho]\)\).";
+TimePiToEuler::usage = "TimePiToEuler[expr] applies the substitution \!\(\[CapitalPi]\_\(,0\) \[RightArrow] v\_i (\(p\_\(,i\)\/\[Rho]\) - \[CapitalPi]\_\(,i\) - \(1\/2\) g\&2\_\(00,i\) - \(1\/2\) g\&2\_\(jj,i\)) - \(p v\_\(i,i\)\/\[Rho]\) - \(1\/2\) g\&2\_\(ii,0\)\).";
 
-MetricToStandard::usage = "";
+MetricToStandard::usage = "MetricToStandard[expr] converts all metric perturbations into PPN potentials and PPN parameters in the standard gauge.";
 
-Met::usage = "";
-Tet::usage = "";
-InvTet::usage = "";
-Asym::usage = "";
-Xi::usage = "";
-NonMet::usage = ""
-CD::usage = "";
-ND::usage = "";
-FD::usage = "";
+Met::usage = "Met[-\[Mu], -\[Nu]] is the physical metric \!\(g\_\(\[Mu]\[Nu]\)\)";
+Tet::usage = "Tet[\[CapitalGamma], -\[Mu]] is the physical tetrad \!\(\(\[Theta]\^\[CapitalGamma]\)\_\[Mu]\)";
+InvTet::usage = "InvTet[-\[CapitalGamma], \[Mu]] is the inverse physical tetrad \!\(\(e\_\[CapitalGamma]\)\^\[Mu]\)";
+Asym::usage = "Asym[-\[Mu], -\[Nu]] is the antisymmetric psrt \!\(a\_\(\[Mu]\[Nu]\)\) of the tetrad perturbation.";
+Xi::usage = "Xi[i] is the generating vector field \!\(\[Xi]\^i\) of the symmetric teleparallel connection.";
+NonMet::usage = "NonMet[-\[Rho], -\[Mu], -\[Nu]] is the nonmetricity tensor \!\(Q\_\(\[Rho]\[Mu]\[Nu]\)\) of the symmetric teleparallel connection."
+CD::usage = "CD[-\[Mu]] is the Levi-Civita covariant derivative \!\(\[EmptyDownTriangle]\&\[EmptyCircle]\).";
+ND::usage = "ND[-\[Mu]] is the symmetric teleparallel covariant derivative \!\(\[EmptyDownTriangle]\&\[Times]\).";
+FD::usage = "FD[-\[Mu]] is the teleparallel covariant derivative \!\(\[EmptyDownTriangle]\&\[FilledCircle]\).";
 
 Begin["xAct`xPPN`Private`"]
 
