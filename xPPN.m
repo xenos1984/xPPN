@@ -663,21 +663,29 @@ DefMetric[1, BkgMetricS3[-T3a, -T3b], PD, SymbolOfCovD -> {",", "\[PartialD]"}, 
 DefProductMetric[BkgMetricM4[-T4\[Mu], -T4\[Nu]], {{Tangent[MfTime], 1}, {Tangent[MfSpace], 1}}, PD, SymbolOfCovD -> {",", "\[PartialD]"}, PrintAs -> "\[Eta]", FlatMetric -> True];
 
 AutomaticRules[BkgInvTetradM4, MakeRule[{BkgInvTetradM4[-L4\[CapitalAlpha], T4\[Mu]] * BkgTetradM4[L4\[CapitalAlpha], -T4\[Nu]], delta[-T4\[Nu], T4\[Mu]]}, MetricOn -> All, ContractMetrics -> True]];
-AutomaticRules[BkgInvTetradS3, MakeRule[{BkgInvTetradS3[-L3A, T3a] * BkgTetradS3[L3A, -T3b], delta[-T3b, T3a]}, MetricOn -> All, ContractMetrics -> True]];
+AutomaticRules[BkgInvTetradM4, MakeRule[{BkgInvTetradM4[-L4\[CapitalAlpha], T4\[Mu]] * BkgTetradM4[L4\[CapitalBeta], -T4\[Mu]], delta[-L4\[CapitalAlpha], L4\[CapitalBeta]]}, MetricOn -> All, ContractMetrics -> True]];
 AutomaticRules[BkgTetradM4, MakeRule[{PD[-T4\[Nu]][BkgTetradM4[L4\[CapitalAlpha], -T4\[Mu]]], 0}, MetricOn -> All, ContractMetrics -> True]];
 AutomaticRules[BkgInvTetradM4, MakeRule[{PD[-T4\[Nu]][BkgInvTetradM4[-L4\[CapitalAlpha], T4\[Mu]]], 0}, MetricOn -> All, ContractMetrics -> True]];
+
+AutomaticRules[BkgInvTetradS3, MakeRule[{BkgInvTetradS3[-L3A, T3a] * BkgTetradS3[L3A, -T3b], delta[-T3b, T3a]}, MetricOn -> All, ContractMetrics -> True]];
+AutomaticRules[BkgInvTetradS3, MakeRule[{BkgInvTetradS3[-L3A, T3a] * BkgTetradS3[L3B, -T3a], delta[-L3A, L3B]}, MetricOn -> All, ContractMetrics -> True]];
 AutomaticRules[BkgTetradS3, MakeRule[{PD[-T3b][BkgTetradS3[L3A, -T3a]], 0}, MetricOn -> All, ContractMetrics -> True]];
 AutomaticRules[BkgInvTetradS3, MakeRule[{PD[-T3b][BkgInvTetradS3[-L3A, T3a]], 0}, MetricOn -> All, ContractMetrics -> True]];
 
 DefMetric[-1, Met[-T4\[Mu], -T4\[Nu]], CD, SymbolOfCovD -> {";", "\!\(\[EmptyDownTriangle]\&\[EmptyCircle]\)"},  PrintAs -> "g"];
 DefTensor[Tet[L4\[CapitalAlpha], -T4\[Mu]], {MfSpacetime}, PrintAs -> "\[Theta]"];
 DefTensor[InvTet[-L4\[CapitalAlpha], T4\[Mu]], {MfSpacetime}, PrintAs -> "e"];
-DefTensor[Asym[-T4\[Mu], -T4\[Nu]], {MfSpacetime}, Antisymmetric[{1, 2}], PrintAs -> "a"];
-DefCovD[FD[-T4\[Mu]], LorentzMfSpacetime, SymbolOfCovD -> {"|", "\!\(\[EmptyDownTriangle]\&\[FilledCircle]\)"}, FromMetric -> Met, Torsion -> True, Curvature -> False];
-DefTensor[Xi[T4\[Mu]], {MfSpacetime}, PrintAs -> "\[Xi]"];
-DefCovD[ND[-T4\[Mu]], SymbolOfCovD -> {"#", "\!\(\[EmptyDownTriangle]\&\[Times]\)"}, Torsion -> False, Curvature -> False];
-DefTensor[NonMet[-T4\[Rho], -T4\[Mu], -T4\[Nu]], {MfSpacetime}, Symmetric[{2, 3}], PrintAs -> "Q"];
+
 AutomaticRules[InvTet, MakeRule[{InvTet[-L4\[CapitalAlpha], T4\[Mu]] * Tet[L4\[CapitalAlpha], -T4\[Nu]], delta[-T4\[Nu], T4\[Mu]]}, MetricOn -> All, ContractMetrics -> True]];
+AutomaticRules[InvTet, MakeRule[{InvTet[-L4\[CapitalAlpha], T4\[Mu]] * Tet[L4\[CapitalBeta], -T4\[Mu]], delta[-L4\[CapitalAlpha], L4\[CapitalBeta]]}, MetricOn -> All, ContractMetrics -> True]];
+AutomaticRules[InvTet, MakeRule[{PD[-T4\[Nu]][InvTet[-L4\[CapitalAlpha], T4\[Mu]]], -InvTet[-L4\[CapitalAlpha], T4\[Rho]] * InvTet[-L4\[CapitalBeta], T4\[Mu]] * PD[-T4\[Nu]][Tet[L4\[CapitalBeta], -T4\[Rho]]]}, MetricOn -> All, ContractMetrics -> True]];
+
+DefCovD[FD[-T4\[Mu]], LorentzMfSpacetime, SymbolOfCovD -> {"|", "\!\(\[EmptyDownTriangle]\&\[FilledCircle]\)"}, FromMetric -> Met, Torsion -> True, Curvature -> False];
+DefCovD[ND[-T4\[Mu]], SymbolOfCovD -> {"#", "\!\(\[EmptyDownTriangle]\&\[Times]\)"}, Torsion -> False, Curvature -> False];
+
+DefTensor[Asym[-T4\[Mu], -T4\[Nu]], {MfSpacetime}, Antisymmetric[{1, 2}], PrintAs -> "a"];
+DefTensor[Xi[T4\[Mu]], {MfSpacetime}, PrintAs -> "\[Xi]"];
+DefTensor[NonMet[-T4\[Rho], -T4\[Mu], -T4\[Nu]], {MfSpacetime}, Symmetric[{2, 3}], PrintAs -> "Q"];
 
 GiveSymbol[Christoffel, CD, ND];
 GiveSymbol[Christoffel, CD, FD];
