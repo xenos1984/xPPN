@@ -417,6 +417,16 @@ CreateDetMetricRules[met_, bkg_] := Module[{dmet},
 	OrderSet[PPN[dmet, 4][], PPN[met, 4][-LI[0], -LI[0]] - bkg[T3a, T3b] * PPN[met, 4][-T3a, -T3b] + PPN[met, 2][-LI[0], -LI[0]] * bkg[T3a, T3b] * PPN[met, 2][-T3a, -T3b] + bkg[T3a, T3b] * bkg[T3c, T3d] * (PPN[met, 2][-T3a, -T3c] * PPN[met, 2][-T3b, -T3d] - PPN[met, 2][-T3a, -T3b] * PPN[met, 2][-T3c, -T3d]) / 2];
 ];
 
+CreateEpsilonMetricRules[met_, bkg_] := Module[{dmet, emet, ebkg, n},
+	dmet = Determinant[met, AIndex];
+	{emet, ebkg} = epsilon /@ {met, bkg};
+
+	Do[
+		OrderSet[PPN[emet, n][-LI[0], -T3a, -T3b, -T3c], VelocityOrder[SpaceTimeSplit[Sqrt[-dmet[]], {}], n] * ebkg[-T3a, -T3b, -T3c]];
+		OrderSet[PPN[emet, n][-T3a, -T3b, -T3c, -T3d], 0],
+	{n, 0, $MaxPPNOrder}];
+];
+
 CreateAsymRules[asy_] := (
 	OrderSet[PPN[asy, 0][-LI[0], -T3a], 0];
 	OrderSet[PPN[asy, 0][-T3a, -T3b]  , 0];
@@ -817,6 +827,7 @@ TimePiToEuler[expr_] := SortPDsToTime[expr, InternalEnergy] //. {ParamD[t___, Ti
 CreateMetricRules[Met, BkgMetricS3];
 CreateInvMetricRules[Met, BkgMetricS3];
 CreateDetMetricRules[Met, BkgMetricS3];
+CreateEpsilonMetricRules[Met, BkgMetricS3];
 
 CreateAsymRules[Asym];
 CreateTetradRules[Tet, Met, Asym, BkgTetradS3, BkgInvTetradS3, BkgMetricS3];
