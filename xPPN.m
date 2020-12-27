@@ -427,6 +427,26 @@ CreateEpsilonMetricRules[met_, bkg_] := Module[{dmet, emet, ebkg, n},
 	{n, 0, $MaxPPNOrder}];
 ];
 
+CreateTetraMetricRules[met_] := Module[{expr},
+	expr = {
+		{
+			Tetra[met][-T4\[Mu], -T4\[Nu], -T4\[Rho], -T4\[Sigma]],
+			(met[-T4\[Mu], -T4\[Rho]] * met[-T4\[Nu], -T4\[Sigma]] + met[-T4\[Mu], -T4\[Sigma]] * met[-T4\[Nu], -T4\[Rho]] - met[-T4\[Mu], -T4\[Nu]] * met[-T4\[Rho], -T4\[Sigma]]) / 2 + I * epsilon[Met][-T4\[Mu], -T4\[Nu], -T4\[Rho], -T4\[Sigma]]
+		},
+		{
+			Dagger[Tetra[met]][-T4\[Mu], -T4\[Nu], -T4\[Rho], -T4\[Sigma]],
+			(met[-T4\[Mu], -T4\[Rho]] * met[-T4\[Nu], -T4\[Sigma]] + met[-T4\[Mu], -T4\[Sigma]] * met[-T4\[Nu], -T4\[Rho]] - met[-T4\[Mu], -T4\[Nu]] * met[-T4\[Rho], -T4\[Sigma]]) / 2 - I * epsilon[Met][-T4\[Mu], -T4\[Nu], -T4\[Rho], -T4\[Sigma]]
+		}
+	};
+	expr = Map[SpaceTimeSplits[#, {-T4\[Mu] -> -T3a, -T4\[Nu] -> -T3b, -T4\[Rho] -> -T3c, -T4\[Sigma] -> -T3d}]&, expr, {2}];
+	expr = Map[Simplify[ToCanonical[#]]&, expr, {6}];
+	expr = Union[DeleteCases[DeleteCases[Flatten[Transpose[expr, {5, 6, 1, 2, 3, 4}], 4], {0, _}], {-_, _}], SameTest -> (SameQ @@ (Head /@ First /@ {##})&)];
+	expr = Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]];
+	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
+	expr = Map[Simplify[ToCanonical[ContractMetric[#, OverDerivatives -> True, AllowUpperDerivatives -> True]]]&, expr, {2}];
+	MapThread[OrderSet, Transpose[expr], 1];
+];
+
 CreateAsymRules[asy_] := (
 	OrderSet[PPN[asy, 0][-LI[0], -T3a], 0];
 	OrderSet[PPN[asy, 0][-T3a, -T3b]  , 0];
@@ -828,6 +848,7 @@ CreateMetricRules[Met, BkgMetricS3];
 CreateInvMetricRules[Met, BkgMetricS3];
 CreateDetMetricRules[Met, BkgMetricS3];
 CreateEpsilonMetricRules[Met, BkgMetricS3];
+CreateTetraMetricRules[Met];
 
 CreateAsymRules[Asym];
 CreateTetradRules[Tet, Met, Asym, BkgTetradS3, BkgInvTetradS3, BkgMetricS3];
