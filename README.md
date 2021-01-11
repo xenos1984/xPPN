@@ -21,7 +21,8 @@ git clone https://github.com/xenos1984/xPPN.git
 
 ## Documentation
 
-* [Presentation at Space Science @ Drop Tower Seminar - 2. September 2020](http://kodu.ut.ee/~manuel/talks/ppn/2020_09_02_bremen.pdf)
+* [xPPN: An implementation of the parametrized post-Newtonian formalism using xAct for Mathematica](http://old.inspirehep.net/record/1838867), [arXiv:2012.14984 [gr-qc]](http://arxiv.org/abs/arXiv:2012.14984).
+* [Presentation at Space Science @ Drop Tower Seminar - 2. September 2020](http://kodu.ut.ee/~manuel/talks/ppn/2020_09_02_bremen.pdf).
 
 ## Further information
 
