@@ -1,7 +1,7 @@
 (* ::Package:: *)
 
 (* ::Title:: *)
-(*PPN calculation for scalar-tensor gravity in xAct*)
+(*PPN calculation for generalized Brans-Dicke scalar-tensor gravity in xAct*)
 
 
 (* ::Chapter:: *)
