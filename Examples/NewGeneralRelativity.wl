@@ -149,6 +149,7 @@ teteq31list = %;
 teteq31def = Union[Flatten[MapThread[Equal, %, 2]]];
 teteq31ru = Flatten[mkrg /@ %];
 
+
 (* ::Section:: *)
 (*Velocity orders*)
 
