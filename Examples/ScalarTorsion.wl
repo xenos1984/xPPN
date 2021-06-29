@@ -1,7 +1,7 @@
 (* ::Package:: *)
 
 (* ::Title:: *)
-(*PPN calculation for general scalar-torsion gravity in xAct*)
+(*General scalar-torsion gravity*)
 
 
 (* ::Chapter:: *)

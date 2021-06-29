@@ -1,7 +1,7 @@
 (* ::Package:: *)
 
 (* ::Title:: *)
-(*PPN calculation for "New General Relativity" class of teleparallel gravity in xAct*)
+(*"New General Relativity" class of teleparallel gravity*)
 
 
 (* ::Chapter:: *)

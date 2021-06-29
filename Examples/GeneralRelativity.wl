@@ -1,7 +1,7 @@
 (* ::Package:: *)
 
 (* ::Title:: *)
-(*PPN calculation for general relativity in xAct*)
+(*General relativity*)
 
 
 (* ::Chapter:: *)
