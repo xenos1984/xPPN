@@ -120,11 +120,14 @@ Met::usage = "Met[-\[Mu], -\[Nu]] is the physical metric \!\(g\_\(\[Mu]\[Nu]\)\)
 Tet::usage = "Tet[\[CapitalGamma], -\[Mu]] is the physical tetrad \!\(\(\[Theta]\^\[CapitalGamma]\)\_\[Mu]\)";
 InvTet::usage = "InvTet[-\[CapitalGamma], \[Mu]] is the inverse physical tetrad \!\(\(e\_\[CapitalGamma]\)\^\[Mu]\)";
 Asym::usage = "Asym[-\[Mu], -\[Nu]] is the antisymmetric part \!\(a\_\(\[Mu]\[Nu]\)\) of the tetrad perturbation.";
+Tgen::usage = "Tgen[\[Mu], -\[Nu]] is the perturbation \!\(\[Lambda]\^\[Mu]\_\[Nu]\) of the generator of the general teleparallel connection.";
 Xi::usage = "Xi[i] is the generating vector field \!\(\[Xi]\^i\) of the symmetric teleparallel connection.";
 NonMetND::usage = "NonMetND[-\[Rho], -\[Mu], -\[Nu]] is the nonmetricity tensor \!\(Q\&\[Times]\_\(\[Rho]\[Mu]\[Nu]\)\) of the symmetric teleparallel connection."
+NonMetTD::usage = "NonMetTD[-\[Rho], -\[Mu], -\[Nu]] is the nonmetricity tensor \!\(Q\&\[DoubleVerticalBar]\_\(\[Rho]\[Mu]\[Nu]\)\) of the general teleparallel connection."
 CD::usage = "CD[-\[Mu]] is the Levi-Civita covariant derivative \!\(\[EmptyDownTriangle]\&\[EmptyCircle]\).";
 ND::usage = "ND[-\[Mu]] is the symmetric teleparallel covariant derivative \!\(\[EmptyDownTriangle]\&\[Times]\).";
-FD::usage = "FD[-\[Mu]] is the teleparallel covariant derivative \!\(\[EmptyDownTriangle]\&\[FilledCircle]\).";
+FD::usage = "FD[-\[Mu]] is the metric teleparallel covariant derivative \!\(\[EmptyDownTriangle]\&\[FilledCircle]\).";
+TD::usage = "TD[-\[Mu]] is the general teleparallel covariant derivative \!\(\[EmptyDownTriangle]\&\[DoubleVerticalBar]\).";
 
 Begin["xAct`xPPN`Private`"]
 
@@ -271,7 +274,17 @@ CreateCoincRules[nd_, xi_] := Module[{expr, n},
 	MapThread[OrderSet, Transpose[expr], 1];
 ];
 
-CreateNonMetNDRules[nm_, nd_, met_] := Module[{expr},
+CreateTeleRules[td_, tg_] := Module[{expr, n},
+	expr = {Christoffel[td][T4\[Rho], -T4\[Nu], -T4\[Mu]], (2 * delta[-T4\[Alpha], T4\[Rho]] - tg[T4\[Rho], -T4\[Alpha]]) * PD[-T4\[Nu]][tg[T4\[Alpha], -T4\[Mu]]]};
+	expr = SpaceTimeSplits[#, {T4\[Rho] -> T3c, -T4\[Mu] -> -T3a, -T4\[Nu] -> -T3b}]& /@ expr;
+	expr = Union[Flatten[Transpose[expr, {4, 1, 2, 3}], 2], SameTest -> (SameQ @@ (Head /@ First /@ {##})&)];
+	expr = Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]];
+	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
+	expr = expr /. {delta[-LI[0], LI[0]] -> 1} /. {delta[-_, LI[0]] :> 0, delta[-LI[0], _] :> 0};
+	MapThread[OrderSet, Transpose[expr], 1];
+];
+
+CreateNonMetRules[nm_, nd_, met_] := Module[{expr},
 	expr = {nm[-T4\[Rho], -T4\[Mu], -T4\[Nu]], ChangeCovD[nd[-T4\[Rho]][met[-T4\[Mu], -T4\[Nu]]], nd, PD]};
 	expr = SpaceTimeSplits[#, {-T4\[Rho] -> -T3c, -T4\[Mu] -> -T3a, -T4\[Nu] -> -T3b}]& /@ expr;
 	expr = Map[Simplify[ToCanonical[#]]&, expr, {4}];
@@ -455,6 +468,23 @@ CreateAsymRules[asy_] := (
 	OrderSet[PPN[asy, 2][-LI[0], -T3a], 0];
 	OrderSet[PPN[asy, 3][-T3a, -T3b]  , 0];
 	OrderSet[PPN[asy, 4][-LI[0], -T3a], 0];
+);
+
+CreateTgenRules[tg_] := (
+	OrderSet[PPN[tg, 0][LI[0], -LI[0]], 1];
+	OrderSet[PPN[tg, 0][T3a, -LI[0]]  , 0];
+	OrderSet[PPN[tg, 0][LI[0], -T3a]  , 0];
+	OrderSet[PPN[tg, 0][T3a, -T3b]    , delta[-T3b, T3a]];
+	OrderSet[PPN[tg, 1][LI[0], -LI[0]], 0];
+	OrderSet[PPN[tg, 1][T3a, -LI[0]]  , 0];
+	OrderSet[PPN[tg, 1][LI[0], -T3a]  , 0];
+	OrderSet[PPN[tg, 1][T3a, -T3b]    , 0];
+	OrderSet[PPN[tg, 2][T3a, -LI[0]]  , 0];
+	OrderSet[PPN[tg, 2][LI[0], -T3a]  , 0];
+	OrderSet[PPN[tg, 3][LI[0], -LI[0]], 0];
+	OrderSet[PPN[tg, 3][T3a, -T3b]    , 0];
+	OrderSet[PPN[tg, 4][T3a, -LI[0]]  , 0];
+	OrderSet[PPN[tg, 4][LI[0], -T3a]  , 0];
 );
 
 CreateEnMomRules[em_, met_, dens_, pres_, int_, vel_, bkg_] := (
@@ -722,14 +752,20 @@ AutomaticRules[InvTet, MakeRule[{PD[-T4\[Nu]][InvTet[-L4\[CapitalAlpha], T4\[Mu]
 
 DefCovD[FD[-T4\[Mu]], LorentzMfSpacetime, SymbolOfCovD -> {"|", "\!\(\[EmptyDownTriangle]\&\[FilledCircle]\)"}, FromMetric -> Met, Torsion -> True, Curvature -> False];
 DefCovD[ND[-T4\[Mu]], SymbolOfCovD -> {"#", "\!\(\[EmptyDownTriangle]\&\[Times]\)"}, Torsion -> False, Curvature -> False];
+DefCovD[TD[-T4\[Mu]], SymbolOfCovD -> {":", "\!\(\[EmptyDownTriangle]\&\[DoubleVerticalBar]\)"}, Torsion -> True, Curvature -> False];
 
 DefTensor[Asym[-T4\[Mu], -T4\[Nu]], {MfSpacetime}, Antisymmetric[{1, 2}], PrintAs -> "a"];
+DefTensor[Tgen[T4\[Mu], -T4\[Nu]], {MfSpacetime}, PrintAs -> "\[Lambda]"];
 DefTensor[Xi[T4\[Mu]], {MfSpacetime}, PrintAs -> "\[Xi]"];
-DefTensor[NonMetND[-T4\[Rho], -T4\[Mu], -T4\[Nu]], {MfSpacetime}, Symmetric[{2, 3}], PrintAs -> "Q\&\[Times]"];
+DefTensor[NonMetND[-T4\[Rho], -T4\[Mu], -T4\[Nu]], {MfSpacetime}, Symmetric[{2, 3}], PrintAs -> "\!\(Q\&\[Times]\)"];
+DefTensor[NonMetTD[-T4\[Rho], -T4\[Mu], -T4\[Nu]], {MfSpacetime}, Symmetric[{2, 3}], PrintAs -> "\!\(Q\&\[DoubleVerticalBar]\)"];
 
 GiveSymbol[Christoffel, CD, ND];
 GiveSymbol[Christoffel, CD, FD];
 GiveSymbol[Christoffel, FD, ND];
+GiveSymbol[Christoffel, CD, TD];
+GiveSymbol[Christoffel, FD, TD];
+GiveSymbol[Christoffel, ND, TD];
 
 DefTensor[EnergyMomentum[-T4\[Mu], -T4\[Nu]], {MfSpacetime}, Symmetric[{1, 2}], PrintAs -> "\[CapitalTheta]"];
 DefTensor[TREnergyMomentum[-T4\[Mu], -T4\[Nu]], {MfSpacetime}, Symmetric[{1, 2}], PrintAs -> "\!\(\[CapitalTheta]\&_\)"];
@@ -850,10 +886,6 @@ CreateDetMetricRules[Met, BkgMetricS3];
 CreateEpsilonMetricRules[Met, BkgMetricS3];
 CreateTetraMetricRules[Met];
 
-CreateAsymRules[Asym];
-CreateTetradRules[Tet, Met, Asym, BkgTetradS3, BkgInvTetradS3, BkgMetricS3];
-CreateInvTetradRules[InvTet, Tet, BkgInvTetradS3];
-
 CreateLeviCivitaRules[CD, Met];
 CreateRiemannRules[CD];
 CreateRiemannDownRules[CD, Met];
@@ -864,16 +896,27 @@ CreateTFRicciRules[CD, Met];
 CreateWeylRules[CD, Met];
 CreateKretschmannRules[CD, Met];
 
+CreateAsymRules[Asym];
+CreateTetradRules[Tet, Met, Asym, BkgTetradS3, BkgInvTetradS3, BkgMetricS3];
+CreateInvTetradRules[InvTet, Tet, BkgInvTetradS3];
 CreateWeitzRules[FD, Tet, InvTet];
 CreateTorsionRules[FD];
-CreateConnDiffRules[CD, FD];
 
 CreateXiRules[Xi];
 CreateCoincRules[ND, Xi];
-CreateConnDiffRules[CD, ND];
-CreateNonMetNDRules[NonMetND, ND, Met];
+CreateNonMetRules[NonMetND, ND, Met];
 
+CreateTgenRules[Tgen];
+CreateTeleRules[TD, Tgen];
+CreateTorsionRules[TD];
+CreateNonMetRules[NonMetTD, TD, Met];
+
+CreateConnDiffRules[CD, FD];
+CreateConnDiffRules[CD, ND];
 CreateConnDiffRules[FD, ND];
+CreateConnDiffRules[CD, TD];
+CreateConnDiffRules[FD, TD];
+CreateConnDiffRules[ND, TD];
 
 CreateEnMomRules[EnergyMomentum, Met, Density, Pressure, InternalEnergy, Velocity, BkgMetricS3];
 
