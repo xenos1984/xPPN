@@ -121,7 +121,7 @@ Tet::usage = "Tet[\[CapitalGamma], -\[Mu]] is the physical tetrad \!\(\(\[Theta]
 InvTet::usage = "InvTet[-\[CapitalGamma], \[Mu]] is the inverse physical tetrad \!\(\(e\_\[CapitalGamma]\)\^\[Mu]\)";
 Asym::usage = "Asym[-\[Mu], -\[Nu]] is the antisymmetric psrt \!\(a\_\(\[Mu]\[Nu]\)\) of the tetrad perturbation.";
 Xi::usage = "Xi[i] is the generating vector field \!\(\[Xi]\^i\) of the symmetric teleparallel connection.";
-NonMet::usage = "NonMet[-\[Rho], -\[Mu], -\[Nu]] is the nonmetricity tensor \!\(Q\_\(\[Rho]\[Mu]\[Nu]\)\) of the symmetric teleparallel connection."
+NonMetND::usage = "NonMetND[-\[Rho], -\[Mu], -\[Nu]] is the nonmetricity tensor \!\(Q\&\[Times]\_\(\[Rho]\[Mu]\[Nu]\)\) of the symmetric teleparallel connection."
 CD::usage = "CD[-\[Mu]] is the Levi-Civita covariant derivative \!\(\[EmptyDownTriangle]\&\[EmptyCircle]\).";
 ND::usage = "ND[-\[Mu]] is the symmetric teleparallel covariant derivative \!\(\[EmptyDownTriangle]\&\[Times]\).";
 FD::usage = "FD[-\[Mu]] is the teleparallel covariant derivative \!\(\[EmptyDownTriangle]\&\[FilledCircle]\).";
@@ -271,7 +271,7 @@ CreateCoincRules[nd_, xi_] := Module[{expr, n},
 	MapThread[OrderSet, Transpose[expr], 1];
 ];
 
-CreateNonMetRules[nm_, nd_, met_] := Module[{expr},
+CreateNonMetNDRules[nm_, nd_, met_] := Module[{expr},
 	expr = {nm[-T4\[Rho], -T4\[Mu], -T4\[Nu]], ChangeCovD[nd[-T4\[Rho]][met[-T4\[Mu], -T4\[Nu]]], nd, PD]};
 	expr = SpaceTimeSplits[#, {-T4\[Rho] -> -T3c, -T4\[Mu] -> -T3a, -T4\[Nu] -> -T3b}]& /@ expr;
 	expr = Map[Simplify[ToCanonical[#]]&, expr, {4}];
@@ -725,7 +725,7 @@ DefCovD[ND[-T4\[Mu]], SymbolOfCovD -> {"#", "\!\(\[EmptyDownTriangle]\&\[Times]\
 
 DefTensor[Asym[-T4\[Mu], -T4\[Nu]], {MfSpacetime}, Antisymmetric[{1, 2}], PrintAs -> "a"];
 DefTensor[Xi[T4\[Mu]], {MfSpacetime}, PrintAs -> "\[Xi]"];
-DefTensor[NonMet[-T4\[Rho], -T4\[Mu], -T4\[Nu]], {MfSpacetime}, Symmetric[{2, 3}], PrintAs -> "Q"];
+DefTensor[NonMetND[-T4\[Rho], -T4\[Mu], -T4\[Nu]], {MfSpacetime}, Symmetric[{2, 3}], PrintAs -> "Q\&\[Times]"];
 
 GiveSymbol[Christoffel, CD, ND];
 GiveSymbol[Christoffel, CD, FD];
@@ -871,7 +871,7 @@ CreateConnDiffRules[CD, FD];
 CreateXiRules[Xi];
 CreateCoincRules[ND, Xi];
 CreateConnDiffRules[CD, ND];
-CreateNonMetRules[NonMet, ND, Met];
+CreateNonMetNDRules[NonMetND, ND, Met];
 
 CreateConnDiffRules[FD, ND];
 
