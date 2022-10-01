@@ -241,6 +241,7 @@ CreateXiRules[xi_] := (
 	OrderSet[PPN[xi, 2][LI[0]], 0];
 	OrderSet[PPN[xi, 3][T3a]  , 0];
 	OrderSet[PPN[xi, 4][LI[0]], 0];
+	Return[xi];
 );
 (*
 CreateCoincRules[nd_, xi_] := Module[{expr, n},
@@ -258,6 +259,8 @@ CreateCoincRules[nd_, xi_] := Module[{expr, n},
 		expr = Simplify[ToCanonical[expr]];
 		MapThread[OrderSet, Transpose[expr], 1],
 	{n, $MaxPPNOrder}];
+
+	Return[GiveSymbol[Christoffel, nd]];
 ];
 *)
 CreateCoincRules[nd_, xi_] := Module[{expr, n},
@@ -272,6 +275,7 @@ CreateCoincRules[nd_, xi_] := Module[{expr, n},
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
 	expr = Simplify[ToCanonical[expr]];
 	MapThread[OrderSet, Transpose[expr], 1];
+	Return[GiveSymbol[Christoffel, nd]];
 ];
 
 CreateTeleRules[td_, tg_] := Module[{expr, n},
@@ -282,6 +286,7 @@ CreateTeleRules[td_, tg_] := Module[{expr, n},
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
 	expr = expr /. {delta[-LI[0], LI[0]] -> 1} /. {delta[-_, LI[0]] :> 0, delta[-LI[0], _] :> 0};
 	MapThread[OrderSet, Transpose[expr], 1];
+	Return[GiveSymbol[Christoffel, td]];
 ];
 
 CreateNonMetRules[nm_, nd_, met_] := Module[{expr},
@@ -293,6 +298,7 @@ CreateNonMetRules[nm_, nd_, met_] := Module[{expr},
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
 	expr = Simplify[ToCanonical[expr]];
 	MapThread[OrderSet, Transpose[expr], 1];
+	Return[nm];
 ];
 
 CreateTetradRules[tet_, met_, asy_, bkt_, bki_, bkm_] := Module[{n, k},
@@ -319,6 +325,8 @@ CreateTetradRules[tet_, met_, asy_, bkt_, bki_, bkm_] := Module[{n, k},
 			}
 		}, 1],
 	{n, $MaxPPNOrder}];
+
+	Return[tet];
 ];
 
 CreateInvTetradRules[itet_, tet_, bkt_] := Module[{n, m},
@@ -345,6 +353,8 @@ CreateInvTetradRules[itet_, tet_, bkt_] := Module[{n, m},
 			} /. PPNRules[tet] /. PPNRules[itet])
 		}, 1],
 	{n, $MaxPPNOrder}];
+
+	Return[itet];
 ];
 
 CreateWeitzRules[fd_, tet_, itet_] := Module[{expr},
@@ -356,6 +366,7 @@ CreateWeitzRules[fd_, tet_, itet_] := Module[{expr},
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
 	expr = Simplify[ToCanonical[expr]];
 	MapThread[OrderSet, Transpose[expr], 1];
+	Return[GiveSymbol[Christoffel, fd]];
 ];
 
 CreateTorsionRules[fd_] := Module[{expr},
@@ -367,6 +378,7 @@ CreateTorsionRules[fd_] := Module[{expr},
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
 	expr = Simplify[ToCanonical[expr]];
 	MapThread[OrderSet, Transpose[expr], 1];
+	Return[Torsion[fd]];
 ];
 
 CreateConnDiffRules[cd_, xd_] := Module[{expr},
@@ -378,6 +390,7 @@ CreateConnDiffRules[cd_, xd_] := Module[{expr},
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
 	expr = Simplify[ToCanonical[expr]];
 	MapThread[OrderSet, Transpose[expr], 1];
+	Return[GiveSymbol[Christoffel, cd, xd]];
 ];
 
 CreateMetricRules[met_, bkg_] := (
@@ -385,6 +398,7 @@ CreateMetricRules[met_, bkg_] := (
 	OrderSet[PPN[met, 0][-LI[0], -LI[0]], -1];
 	OrderSet[PPN[met, 0][-LI[0], -T3a]  , 0];
 	OrderSet[PPN[met, 0][-T3a, -T3b]    , bkg[-T3a, -T3b]];
+
 	(* Vanishing components *)
 	OrderSet[PPN[met, 1][-LI[0], -LI[0]], 0];
 	OrderSet[PPN[met, 1][-LI[0], -T3a]  , 0];
@@ -393,6 +407,8 @@ CreateMetricRules[met_, bkg_] := (
 	OrderSet[PPN[met, 3][-LI[0], -LI[0]], 0];
 	OrderSet[PPN[met, 3][-T3a, -T3b]    , 0];
 	OrderSet[PPN[met, 4][-LI[0], -T3a]  , 0];
+
+	Return[met];
 );
 
 CreateInvMetricRules[met_, bkg_] := Module[{imet, n, m},
@@ -418,6 +434,8 @@ CreateInvMetricRules[met_, bkg_] := Module[{imet, n, m},
 			} /. PPNRules[met] /. PPNRules[imet])
 		}, 1],
 	{n, $MaxPPNOrder}];
+
+	Return[imet];
 ];
 
 CreateDetMetricRules[met_, bkg_] := Module[{dmet},
@@ -428,6 +446,8 @@ CreateDetMetricRules[met_, bkg_] := Module[{dmet},
 	OrderSet[PPN[dmet, 2][], PPN[met, 2][-LI[0], -LI[0]] - bkg[T3a, T3b] * PPN[met, 2][-T3a, -T3b]];
 	OrderSet[PPN[dmet, 3][], 0];
 	OrderSet[PPN[dmet, 4][], PPN[met, 4][-LI[0], -LI[0]] - bkg[T3a, T3b] * PPN[met, 4][-T3a, -T3b] + PPN[met, 2][-LI[0], -LI[0]] * bkg[T3a, T3b] * PPN[met, 2][-T3a, -T3b] + bkg[T3a, T3b] * bkg[T3c, T3d] * (PPN[met, 2][-T3a, -T3c] * PPN[met, 2][-T3b, -T3d] - PPN[met, 2][-T3a, -T3b] * PPN[met, 2][-T3c, -T3d]) / 2];
+
+	Return[dmet];
 ];
 
 CreateEpsilonMetricRules[met_, bkg_] := Module[{dmet, emet, ebkg, n},
@@ -438,6 +458,8 @@ CreateEpsilonMetricRules[met_, bkg_] := Module[{dmet, emet, ebkg, n},
 		OrderSet[PPN[emet, n][-LI[0], -T3a, -T3b, -T3c], VelocityOrder[SpaceTimeSplit[Sqrt[-dmet[]], {}], n] * ebkg[-T3a, -T3b, -T3c]];
 		OrderSet[PPN[emet, n][-T3a, -T3b, -T3c, -T3d], 0],
 	{n, 0, $MaxPPNOrder}];
+
+	Return[emet];
 ];
 
 CreateTetraMetricRules[met_] := Module[{expr},
@@ -458,6 +480,7 @@ CreateTetraMetricRules[met_] := Module[{expr},
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
 	expr = Map[Simplify[ToCanonical[ContractMetric[#, OverDerivatives -> True, AllowUpperDerivatives -> True]]]&, expr, {2}];
 	MapThread[OrderSet, Transpose[expr], 1];
+	Return[{Tetra[met], Dagger[Tetra[met]]}];
 ];
 
 CreateAsymRules[asy_] := (
@@ -468,6 +491,7 @@ CreateAsymRules[asy_] := (
 	OrderSet[PPN[asy, 2][-LI[0], -T3a], 0];
 	OrderSet[PPN[asy, 3][-T3a, -T3b]  , 0];
 	OrderSet[PPN[asy, 4][-LI[0], -T3a], 0];
+	Return[asy];
 );
 
 CreateTgenRules[tg_] := (
@@ -485,6 +509,7 @@ CreateTgenRules[tg_] := (
 	OrderSet[PPN[tg, 3][T3a, -T3b]    , 0];
 	OrderSet[PPN[tg, 4][T3a, -LI[0]]  , 0];
 	OrderSet[PPN[tg, 4][LI[0], -T3a]  , 0];
+	Return[tg];
 );
 
 CreateEnMomRules[em_, met_, dens_, pres_, int_, vel_, bkg_] := (
@@ -506,6 +531,7 @@ CreateEnMomRules[em_, met_, dens_, pres_, int_, vel_, bkg_] := (
 	OrderSet[PPN[em, 5][-LI[0], -LI[0]], 0];
 	OrderSet[PPN[em, 5][-LI[0], -T3a]  , -(dens[] * int[] + dens[] * vel[T3b] * vel[-T3b] + pres[]) * vel[-T3a] - dens[] * PPN[met, 3][-LI[0], -T3a] - dens[] * PPN[met, 2][-T3a, -T3b] * vel[T3b]];
 	OrderSet[PPN[em, 5][-T3a, -T3b]    , 0];
+	Return[em];
 );
 
 CreateLeviCivitaRules[cd_, met_] := Module[{expr},
@@ -516,6 +542,7 @@ CreateLeviCivitaRules[cd_, met_] := Module[{expr},
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
 	expr = Map[Simplify[ToCanonical[ContractMetric[#, OverDerivatives -> True, AllowUpperDerivatives -> True]]]&, expr, {2}];
 	MapThread[OrderSet, Transpose[expr], 1];
+	Return[GiveSymbol[Christoffel, cd]];
 ];
 
 CreateRiemannRules[cd_] := Module[{expr},
@@ -527,6 +554,7 @@ CreateRiemannRules[cd_] := Module[{expr},
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
 	expr = Map[Simplify[ToCanonical[ContractMetric[#, OverDerivatives -> True, AllowUpperDerivatives -> True]]]&, expr, {2}];
 	MapThread[OrderSet, Transpose[expr], 1];
+	Return[Riemann[cd]];
 ];
 
 CreateRiemannDownRules[cd_, met_] := Module[{expr},
@@ -538,6 +566,7 @@ CreateRiemannDownRules[cd_, met_] := Module[{expr},
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
 	expr = Map[Simplify[ToCanonical[ContractMetric[#, OverDerivatives -> True, AllowUpperDerivatives -> True]]]&, expr, {2}];
 	MapThread[OrderSet, Transpose[expr], 1];
+	Return[RiemannDown[cd]];
 ];
 
 CreateRicciRules[cd_, met_] := Module[{expr},
@@ -548,6 +577,7 @@ CreateRicciRules[cd_, met_] := Module[{expr},
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
 	expr = Map[Simplify[ToCanonical[ContractMetric[#, OverDerivatives -> True, AllowUpperDerivatives -> True]]]&, expr, {2}];
 	MapThread[OrderSet, Transpose[expr], 1];
+	Return[Ricci[cd]];
 ];
 
 CreateRicciScalarRules[cd_, met_] := Module[{expr},
@@ -555,6 +585,7 @@ CreateRicciScalarRules[cd_, met_] := Module[{expr},
 	expr = Transpose[Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]]];
 	expr = Map[Simplify[ToCanonical[ContractMetric[#, OverDerivatives -> True, AllowUpperDerivatives -> True]]]&, expr, {2}];
 	MapThread[OrderSet, Transpose[expr], 1];
+	Return[RicciScalar[cd]];
 ];
 
 CreateEinsteinRules[cd_, met_] := Module[{expr},
@@ -565,6 +596,7 @@ CreateEinsteinRules[cd_, met_] := Module[{expr},
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
 	expr = Map[Simplify[ToCanonical[ContractMetric[#, OverDerivatives -> True, AllowUpperDerivatives -> True]]]&, expr, {2}];
 	MapThread[OrderSet, Transpose[expr], 1];
+	Return[Einstein[cd]];
 ];
 
 CreateTFRicciRules[cd_, met_] := Module[{expr},
@@ -575,6 +607,7 @@ CreateTFRicciRules[cd_, met_] := Module[{expr},
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
 	expr = Map[Simplify[ToCanonical[ContractMetric[#, OverDerivatives -> True, AllowUpperDerivatives -> True]]]&, expr, {2}];
 	MapThread[OrderSet, Transpose[expr], 1];
+	Return[TFRicci[cd]];
 ];
 
 CreateWeylRules[cd_, met_] := Module[{expr},
@@ -586,6 +619,7 @@ CreateWeylRules[cd_, met_] := Module[{expr},
 	expr = Flatten[Transpose[expr, {2, 3, 1}], 1];
 	expr = Map[Simplify[ToCanonical[ContractMetric[#, OverDerivatives -> True, AllowUpperDerivatives -> True]]]&, expr, {2}];
 	MapThread[OrderSet, Transpose[expr], 1];
+	Return[Weyl[cd]];
 ];
 
 CreateKretschmannRules[cd_, met_] := Module[{expr},
@@ -594,6 +628,7 @@ CreateKretschmannRules[cd_, met_] := Module[{expr},
 	expr = Transpose[Outer[VelocityOrder, expr, Range[0, $MaxPPNOrder]]];
 	expr = Map[Simplify[ToCanonical[ContractMetric[#, OverDerivatives -> True, AllowUpperDerivatives -> True]]]&, expr, {2}];
 	MapThread[OrderSet, Transpose[expr], 1];
+	Return[Kretschmann[cd]];
 ];
 
 SpaceTimeSplit[expr_, reps_] := Module[{fi, res, h, i, x},
@@ -880,45 +915,61 @@ TimeRhoToEuler[expr_] := SortPDsToTime[expr, Density] //. {ParamD[t___, TimePar]
 TimeVelToEuler[expr_] := SortPDsToTime[expr, Velocity] //. {ParamD[t___, TimePar][Velocity[a_]] :> Module[{T3b}, ParamD[t][PD[a][PPN[Met, 2][-LI[0], -LI[0]]] / 2 - PD[a][Pressure[]] / Density[] - Velocity[T3b] * PD[-T3b][Velocity[a]]]]};
 TimePiToEuler[expr_] := SortPDsToTime[expr, InternalEnergy] //. {ParamD[t___, TimePar][InternalEnergy[]] :> Module[{T3a, T3b}, ParamD[t][Velocity[T3a] * (PD[-T3a][Pressure[]] / Density[] - PD[-T3a][InternalEnergy[] + PPN[Met, 2][-LI[0], -LI[0]] / 2 + PPN[Met, 2][-T3b, T3b] / 2]) - Pressure[] * PD[-T3a][Velocity[T3a]] / Density[] - ParamD[TimePar][PPN[Met, 2][-T3a, T3a] / 2]]]};
 
-CreateMetricRules[Met, BkgMetricS3];
-CreateInvMetricRules[Met, BkgMetricS3];
-CreateDetMetricRules[Met, BkgMetricS3];
-CreateEpsilonMetricRules[Met, BkgMetricS3];
-CreateTetraMetricRules[Met];
+$DumpSaveFile = FileNameJoin[{$xActDirectory, "xPPN", "PPNRules.mx"}];
+$DumpSaveFile2 = FileNameJoin[{$TemporaryDirectory, "PPNRules.mx"}];
 
-CreateLeviCivitaRules[CD, Met];
-CreateRiemannRules[CD];
-CreateRiemannDownRules[CD, Met];
-CreateRicciRules[CD, Met];
-CreateRicciScalarRules[CD, Met];
-CreateEinsteinRules[CD, Met];
-CreateTFRicciRules[CD, Met];
-CreateWeylRules[CD, Met];
-CreateKretschmannRules[CD, Met];
+If[
+	FileExistsQ[$DumpSaveFile],
+	Get[$DumpSaveFile],
 
-CreateAsymRules[Asym];
-CreateTetradRules[Tet, Met, Asym, BkgTetradS3, BkgInvTetradS3, BkgMetricS3];
-CreateInvTetradRules[InvTet, Tet, BkgInvTetradS3];
-CreateWeitzRules[FD, Tet, InvTet];
-CreateTorsionRules[FD];
+	$DumpSaveSymbols = Flatten[{
+		CreateMetricRules[Met, BkgMetricS3],
+		CreateInvMetricRules[Met, BkgMetricS3],
+		CreateDetMetricRules[Met, BkgMetricS3],
+		CreateEpsilonMetricRules[Met, BkgMetricS3],
+		CreateTetraMetricRules[Met],
 
-CreateXiRules[Xi];
-CreateCoincRules[ND, Xi];
-CreateNonMetRules[NonMetND, ND, Met];
+		CreateLeviCivitaRules[CD, Met],
+		CreateRiemannRules[CD],
+		CreateRiemannDownRules[CD, Met],
+		CreateRicciRules[CD, Met],
+		CreateRicciScalarRules[CD, Met],
+		CreateEinsteinRules[CD, Met],
+		CreateTFRicciRules[CD, Met],
+		CreateWeylRules[CD, Met],
+		CreateKretschmannRules[CD, Met],
 
-CreateTgenRules[Tgen];
-CreateTeleRules[TD, Tgen];
-CreateTorsionRules[TD];
-CreateNonMetRules[NonMetTD, TD, Met];
+		CreateAsymRules[Asym],
+		CreateTetradRules[Tet, Met, Asym, BkgTetradS3, BkgInvTetradS3, BkgMetricS3],
+		CreateInvTetradRules[InvTet, Tet, BkgInvTetradS3],
+		CreateWeitzRules[FD, Tet, InvTet],
+		CreateTorsionRules[FD],
 
-CreateConnDiffRules[CD, FD];
-CreateConnDiffRules[CD, ND];
-CreateConnDiffRules[FD, ND];
-CreateConnDiffRules[CD, TD];
-CreateConnDiffRules[FD, TD];
-CreateConnDiffRules[ND, TD];
+		CreateXiRules[Xi],
+		CreateCoincRules[ND, Xi],
+		CreateNonMetRules[NonMetND, ND, Met],
 
-CreateEnMomRules[EnergyMomentum, Met, Density, Pressure, InternalEnergy, Velocity, BkgMetricS3];
+		CreateTgenRules[Tgen],
+		CreateTeleRules[TD, Tgen],
+		CreateTorsionRules[TD],
+		CreateNonMetRules[NonMetTD, TD, Met],
+
+		CreateConnDiffRules[CD, FD],
+		CreateConnDiffRules[CD, ND],
+		CreateConnDiffRules[FD, ND],
+		CreateConnDiffRules[CD, TD],
+		CreateConnDiffRules[FD, TD],
+		CreateConnDiffRules[ND, TD],
+
+		CreateEnMomRules[EnergyMomentum, Met, Density, Pressure, InternalEnergy, Velocity, BkgMetricS3]
+	}];
+
+	Check[DumpSave[$DumpSaveFile, Evaluate[$DumpSaveSymbols]],
+		Print["Warning: Could not write expression cache ", $DumpSaveFile, ". Either manually copy the file ", $DumpSaveFile2, " to ", $DumpSaveFile, " or proceed without cache and have the PPN expansion calculated whenever the package is loaded."];
+		DumpSave[$DumpSaveFile2, Evaluate[$DumpSaveSymbols]],
+		DumpSave::noopen
+	];
+];
 
 MetricToStandard[expr_] := expr //. StandardMetricRules[Met, BkgMetricS3] //. PPNRules[Met];
 
